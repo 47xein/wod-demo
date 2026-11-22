@@ -1,0 +1,969 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WOD 데모 · 내 운동에 맞게, 내 몸에 맞게</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#F8F6F0;--card:#FFFFFF;--sub:#F0EADD;--acc:#9D876B;--accD:#6F5D45;--ink:#25241F;--mut:#77736B;--line:#E5DFD3;--up:#2F6B4F;--down:#A3472E}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:#ECE7DC;color:var(--ink);font-family:'Noto Sans KR',system-ui,-apple-system,sans-serif;font-size:16px;line-height:1.5;word-break:keep-all;overflow-wrap:break-word}
+button{font-family:inherit;font-size:inherit;color:inherit;cursor:pointer}
+button:disabled{cursor:not-allowed}
+#app{max-width:430px;margin:0 auto;min-height:100vh;min-height:100dvh;background:var(--bg);position:relative;overflow-x:hidden}
+@media (min-width:600px){#app{box-shadow:0 0 0 1px var(--line),0 20px 60px rgba(37,36,31,.08)}}
+.screen{padding:0 20px 120px;min-height:100vh;min-height:100dvh}
+.screen.enter{animation:enter .22s ease-out}
+@keyframes enter{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.top{display:flex;align-items:center;justify-content:space-between;height:60px;margin:0 -8px}
+.top h2{margin:0;font-size:17px;font-weight:700}
+.icon-btn{width:44px;height:44px;border:0;background:transparent;border-radius:12px;display:flex;align-items:center;justify-content:center;color:var(--ink)}
+.icon-btn:active{background:var(--sub)}
+.logo{display:inline-flex;align-items:center;justify-content:center;height:36px;padding:0 10px;border-radius:10px;background:var(--sub);font-weight:900;font-size:18px;letter-spacing:-.02em}
+h1{font-size:27px;line-height:1.3;font-weight:900;letter-spacing:-.025em;margin:8px 0 6px}
+.lead{color:var(--mut);margin:0 0 20px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:20px;margin-bottom:12px}
+.card.sub{background:var(--sub);border-color:transparent}
+.row{display:flex;align-items:center;gap:12px}
+.between{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.col{display:flex;flex-direction:column;gap:8px}
+.mut{color:var(--mut)}
+.small{font-size:14px}
+.xs{font-size:13px}
+.b{font-weight:700}
+.sec-title{font-size:17px;font-weight:700;margin:24px 0 10px}
+.tag{display:inline-flex;align-items:center;gap:4px;height:24px;padding:0 8px;border-radius:999px;background:var(--sub);color:var(--accD);font-size:12px;font-weight:700;white-space:nowrap}
+.tag.ink{background:var(--ink);color:#fff}
+.tag.line{background:transparent;border:1px solid var(--line);color:var(--mut)}
+.tag.up{background:#E4EFE8;color:var(--up)}
+.tag.down{background:#F6E5DF;color:var(--down)}
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;min-height:54px;padding:0 18px;border-radius:16px;border:0;font-weight:700;font-size:16px;width:100%;transition:transform .1s}
+.btn:active{transform:scale(.98)}
+.btn.pri{background:var(--ink);color:#fff}
+.btn.pri:disabled{background:#BDB7AA}
+.btn.sec{background:var(--card);border:1.5px solid var(--line);color:var(--ink)}
+.btn.soft{background:var(--sub);color:var(--ink)}
+.btn.sm{min-height:44px;font-size:15px;border-radius:12px;width:auto}
+.link{background:none;border:0;padding:10px 4px;color:var(--accD);font-weight:700;font-size:15px;min-height:44px}
+.dock{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;padding:12px 20px 20px;background:linear-gradient(to top,var(--bg) 75%,rgba(248,246,240,0));z-index:20;display:flex;gap:10px}
+.dock .btn{flex:1}
+.nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;height:72px;background:#fff;border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(3,1fr);z-index:20}
+.nav button{border:0;background:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:12px;font-weight:700;color:var(--mut)}
+.nav button[aria-current="page"]{color:var(--ink)}
+.nav button[aria-current="page"] svg{stroke:var(--ink)}
+.opt-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.opt{position:relative;background:var(--card);border:1.5px solid var(--line);border-radius:18px;padding:12px;text-align:left;display:flex;flex-direction:column;gap:6px;transition:background .15s,border-color .15s,transform .1s}
+.opt:active{transform:scale(.98)}
+.opt[aria-pressed="true"]{background:var(--sub);border:2px solid var(--acc);padding:11.5px}
+.check{position:absolute;top:10px;right:10px;width:24px;height:24px;border-radius:999px;background:var(--ink);color:#fff;display:none;align-items:center;justify-content:center}
+.opt[aria-pressed="true"] .check{display:flex;animation:pop .18s ease-out}
+@keyframes pop{from{transform:scale(.4)}to{transform:scale(1)}}
+.opt .t{font-weight:700;font-size:15px;line-height:1.35}
+.opt .d{font-size:13px;color:var(--mut);line-height:1.4}
+.fig{background:var(--sub);border-radius:16px;display:block;width:100%;height:auto}
+.fig-wrap{position:relative}
+.fig-wrap .badge{position:absolute;left:10px;top:10px}
+.progress{height:6px;background:var(--line);border-radius:3px;overflow:hidden}
+.progress i{display:block;height:100%;background:var(--ink);border-radius:3px;transition:width .3s}
+.steps{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:8px}
+.steps li{display:flex;gap:10px;align-items:flex-start}
+.steps li span.n{flex:none;width:22px;height:22px;border-radius:999px;background:var(--ink);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;margin-top:1px}
+.bar-row{display:grid;grid-template-columns:96px 1fr 48px;align-items:center;gap:10px;padding:8px 0}
+.bar{height:12px;background:var(--sub);border-radius:6px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--acc);border-radius:6px;transition:width .5s}
+.bar i.low{background:var(--ink)}
+.list-item{display:flex;gap:12px;align-items:flex-start;padding:14px 0;border-bottom:1px solid var(--line)}
+.list-item:last-child{border-bottom:0}
+.tap{width:100%;text-align:left;background:none;border:0;padding:0}
+.sheet-bg{position:fixed;inset:0;background:rgba(37,36,31,.45);z-index:50;display:flex;align-items:flex-end;justify-content:center;animation:fade .15s}
+@keyframes fade{from{opacity:0}}
+.sheet{background:var(--bg);width:100%;max-width:430px;max-height:88vh;overflow-y:auto;border-radius:24px 24px 0 0;padding:8px 20px 28px;animation:up .2s ease-out}
+@keyframes up{from{transform:translateY(30px)}}
+.sheet .grab{width:40px;height:5px;border-radius:3px;background:var(--line);margin:6px auto 10px}
+.modal-bg{position:fixed;inset:0;background:rgba(37,36,31,.5);z-index:60;display:flex;align-items:center;justify-content:center;padding:24px;animation:fade .15s}
+.modal{background:#fff;border-radius:22px;padding:24px;width:100%;max-width:360px}
+.modal h3{margin:0 0 8px;font-size:19px}
+.toast{position:fixed;left:50%;top:14px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:12px 18px;border-radius:14px;font-size:14px;font-weight:500;z-index:70;max-width:380px;width:calc(100% - 40px);text-align:center;animation:up .2s}
+.seg{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:5px;background:var(--sub);border-radius:16px}
+.switch{width:52px;height:32px;border-radius:999px;border:0;background:#CFC8BA;position:relative;flex:none;transition:background .15s}
+.switch::after{content:'';position:absolute;top:3px;left:3px;width:26px;height:26px;border-radius:999px;background:#fff;transition:left .15s}
+.switch[aria-checked="true"]{background:var(--ink)}
+.switch[aria-checked="true"]::after{left:23px}
+input[type=range]{width:100%;accent-color:var(--ink);height:44px}
+.player{background:var(--ink);color:#fff;min-height:100vh;min-height:100dvh;padding:0 20px 24px;display:flex;flex-direction:column}
+.player .icon-btn{color:#fff}
+.player .icon-btn:active{background:#3A3832}
+.pl-prog{height:6px;background:#3A3832;border-radius:3px;overflow:hidden}
+.pl-prog i{display:block;height:100%;background:var(--acc);transition:width .25s linear}
+.timer{font-size:72px;font-weight:900;letter-spacing:-.03em;font-variant-numeric:tabular-nums;line-height:1;text-align:center}
+.timer.warn{color:#E9D9BF;animation:pulse .5s ease-in-out infinite alternate}
+@keyframes pulse{to{transform:scale(1.05)}}
+.ctrl{display:flex;align-items:center;justify-content:center;gap:22px;margin-top:18px}
+.ctrl button{border:0;border-radius:999px;display:flex;align-items:center;justify-content:center;color:#fff}
+.ctrl .sm{width:60px;height:60px;background:#3A3832}
+.ctrl .lg{width:84px;height:84px;background:var(--acc)}
+.pl-fig{background:#F0EADD;border-radius:20px;display:block;width:100%;height:min(30vh,260px);max-width:none!important}
+.player h1{font-size:22px!important}
+.player .timer{font-size:min(64px,11vh)}
+.player .ctrl{margin-top:10px}
+.player .ctrl .lg{width:76px;height:76px}
+.exit-link{display:block}
+@media (max-height:700px){.pl-fig{height:24vh}.player .tips,.player .exit-link{display:none}.player .timer{font-size:52px}.player .ctrl .sm{width:52px;height:52px}.player .ctrl .lg{width:68px;height:68px}}
+.flash{animation:flash .6s}
+@keyframes flash{0%{box-shadow:0 0 0 0 rgba(157,135,107,.9)}100%{box-shadow:0 0 0 18px rgba(157,135,107,0)}}
+.sport-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.sport-grid .opt{align-items:flex-start;min-height:112px;justify-content:space-between;padding:16px}
+.sport-grid .opt[aria-pressed="true"]{padding:15.5px}
+.ring-wrap{position:relative;width:132px;height:132px;flex:none}
+.ring-wrap .num{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.ring-wrap .num b{font-size:36px;font-weight:900;line-height:1}
+.empty{text-align:center;padding:28px 12px}
+.notice{background:#FBF3E3;border:1px solid #EADCBF;border-radius:16px;padding:14px 16px;font-size:14px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.feel{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.feel .opt{align-items:center;text-align:center;padding:12px 6px}
+.feel .opt[aria-pressed="true"]{padding:11.5px 5.5px}
+.feel .opt .check{display:none!important}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:8px 16px;font-size:15px}
+.kv dt{color:var(--mut)}
+.kv dd{margin:0;font-weight:500;text-align:right}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="layer"></div>
+<script>
+'use strict';
+/* =========================================================
+   WOD 데모 — 모든 점수·추천 기준은 데모 설명용 임시 규칙입니다.
+   평가 동작(TESTS), 운동 동작(MOVES), 가중치(SPORT_REGIONS)는
+   전문가 검토 후 이 데이터만 교체하면 되도록 분리했습니다.
+   ========================================================= */
+
+/* ---------- 기본 데이터 ---------- */
+const REGIONS = {shoulder:'어깨',overhead:'머리 위 움직임',trunk:'몸통',hip:'고관절',posterior:'후면 근육군',ankle:'발목'};
+const REGION_KEYS = Object.keys(REGIONS);
+const SPORTS = {golf:'골프',swim:'수영',crossfit:'크로스핏',run:'러닝',strength:'근력운동',other:'기타 운동'};
+// 종목별 가중 부위 (데모용 예시)
+const SPORT_REGIONS = {golf:['trunk','hip','shoulder'],swim:['shoulder','overhead','trunk'],crossfit:['ankle','hip','overhead'],run:['ankle','hip','posterior'],strength:['hip','shoulder','ankle'],other:[]};
+const TOOLS = {band:'밴드',roller:'폼롤러',ball:'마사지볼',mat:'매트',none:'도구 없이 진행'};
+const PURPOSES = {pre:'운동 전 준비',post:'운동 후 정리'};
+const MINUTES = [5,10,15,20];
+const LEVEL_SCORE = {1:25,2:50,3:75,4:100}; // 데모 평가 기준
+const PREP = 5, SWITCH = 5;              // 준비·좌우 전환 시간(초)
+const Q_PREP = 2, Q_WORK = 5, Q_SWITCH = 2; // 빠르게 체험
+
+/* ---------- 유틸 ---------- */
+const $ = s => document.querySelector(s);
+const clamp = (v,a,b) => Math.max(a,Math.min(b,v));
+const uid = () => Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+const pad = n => (n<10?'0':'')+n;
+function fmtDate(iso,short){const d=new Date(iso);return short?`${d.getMonth()+1}.${d.getDate()}`:`${d.getFullYear()}년 ${d.getMonth()+1}월 ${d.getDate()}일`;}
+function fmtDur(sec){sec=Math.max(0,Math.round(sec));const m=Math.floor(sec/60),s=sec%60;if(!m)return s+'초';return s?`${m}분 ${s}초`:`${m}분`;}
+function mmss(sec){sec=Math.max(0,Math.ceil(sec));return Math.floor(sec/60)+':'+pad(sec%60);}
+function addMonth(iso){const d=new Date(iso);const day=d.getDate();d.setMonth(d.getMonth()+1);if(d.getDate()<day)d.setDate(0);return d.toISOString();}
+function daysAgo(n,h=9){const d=new Date();d.setDate(d.getDate()-n);d.setHours(h,0,0,0);return d.toISOString();}
+function hasBatchim(str){const c=str.trim().slice(-1).charCodeAt(0);if(c<0xAC00||c>0xD7A3)return false;return (c-0xAC00)%28!==0;}
+const jo = (w,a,b) => w+(hasBatchim(w)?a:b);  // jo('발목','을','를')
+const rn = r => REGIONS[r];
+const joinR = rs => rs.map(rn).join('·');
+
+/* ---------- 도식(일러스트) 시스템: 직접 만든 막대 인형 ---------- */
+const G = 176;              // 바닥에 닿는 점의 y
+const LEN = {torso:48,head:13,ua:25,fa:23,th:33,sh:32,ft:11};
+const D = a => [Math.sin(a*Math.PI/180),Math.cos(a*Math.PI/180)];
+const add = (p,a,l) => [p[0]+D(a)[0]*l,p[1]+D(a)[1]*l];
+const angTo = (a,b) => Math.atan2(b[0]-a[0],b[1]-a[1])*180/Math.PI;
+function ik(root,target,l1,l2,sign){
+  const dx=target[0]-root[0],dy=target[1]-root[1];let d=Math.hypot(dx,dy);
+  d=clamp(d,Math.abs(l1-l2)+0.01,l1+l2-0.01);
+  const base=Math.atan2(dx,dy)*180/Math.PI;
+  const off=Math.acos(clamp((l1*l1+d*d-l2*l2)/(2*l1*d),-1,1))*180/Math.PI;
+  const mid=add(root,base+sign*off,l1);
+  return [mid,add(mid,angTo(mid,target),l2)];
+}
+function B(o){
+  const hip=o.hip, t=o.neck?angTo(hip,o.neck):o.t, neck=o.neck||add(hip,t,LEN.torso), head=add(neck,t+(o.hd||0),LEN.head);
+  const armFK=a=>{const e=add(neck,a[0],LEN.ua);return [e,add(e,a[1],LEN.fa)];};
+  const arm=(ang,tgt,s)=>ang?armFK(ang):tgt?ik(neck,tgt,LEN.ua,LEN.fa,s):armFK([0,0]);
+  const [eN,hN]=arm(o.aN,o.hN,o.eS??-1);
+  const [eF,hF]=arm(o.aF||(o.hF?null:o.aN),o.hF||(o.hN?[o.hN[0]-4,o.hN[1]]:null),o.eS??-1);
+  const legFK=l=>{const k=add(hip,l[0],LEN.th),an=add(k,l[1],LEN.sh);return [k,an,add(an,l[2]??(l[1]+90),LEN.ft)];};
+  const leg=(l,f,s,toe)=>{if(l)return legFK(l);const [k,an]=ik(hip,f,LEN.th,LEN.sh,s);return [k,an,add(an,toe??90,LEN.ft)];};
+  const [kN,anN,tN]=leg(o.lN,o.fN,o.kS??1,o.toeN);
+  const [kF,anF,tF]=leg(o.lF||(o.fF?null:o.lN),o.fF||(o.fN?[o.fN[0]-6,o.fN[1]]:null),o.kSF??o.kS??1,o.toeF??o.toeN);
+  const pts={head,neck,hip,eN,hN,eF,hF,kN,anN,tN,kF,anF,tF};
+  const ex={};
+  if(o.ex){for(const k in o.ex){const v=o.ex[k];ex[k]=k==='band'?v.map(x=>typeof x==='string'?pts[x]:x):v;}}
+  return {k:'body',pts,bend:o.bend||0,ex};
+}
+const P = {
+  stand:(o={})=>B(Object.assign({hip:[100,111],t:180,aN:[0,0],aF:[-4,-4],fN:[102,G],fF:[96,G]},o)),
+  arms:(a,o={})=>P.stand(Object.assign({aN:[a,a],aF:[a-5,a-5]},o)),
+  fold:(f,o={})=>{const t=180-f,hip=[100-f*0.14,111+f*0.03],neck=add(hip,t,LEN.torso);
+    const hand=o.handsHip?[hip[0]+8,hip[1]-6]:[neck[0]+3,Math.min(G,neck[1]+47)];
+    return B(Object.assign({hip,t,hN:hand,hF:[hand[0]-3,hand[1]],eS:o.handsHip?-1:1,fN:[102,G],fF:[96,G]},o));},
+  supKnee:(f,o={})=>B(Object.assign({hip:[108,172],t:-90,lN:[90+f,90+f-150],lF:[90,90,180]},o,{hN:o.hN||add(add([108,172],90+f,LEN.th),0,0),eS:1})),
+  kneel:(s,o={})=>{const ank=[o.ax||118,G],knee=add(ank,180-s,LEN.sh),hip=[knee[0]-LEN.th,knee[1]];
+    const ba=-Math.acos(clamp((G-hip[1])/LEN.th,-1,1))*180/Math.PI;
+    const wall=o.wall?ank[0]+34:null;
+    const base={hip,t:o.t??172,lN:[90,-s,90],lF:[ba,-90,-90],hN:o.hN||(wall?[wall-2,hip[1]-38]:[hip[0]+10,hip[1]-4]),eS:-1};
+    const ex=Object.assign({},o.ex||{});if(wall)ex.wall=wall;
+    return B(Object.assign(base,o,{ex}));},
+  quad:(o={})=>{const hip=o.hip||[128,143];return B(Object.assign({hip,neck:o.neck||[hip[0]-45,128],aN:[0,0],aF:[-2,-2],lN:[0,-90,-90],lF:[-3,-90,-90]},o));},
+  supine:(o={})=>B(Object.assign({hip:[108,172],t:-90,fN:[134,G],kS:1,toeN:90},o)),
+  seat:(o={})=>B(Object.assign({hip:[90,170],t:192,hN:[70,G],eS:-1,lN:[92,92,182]},o)),
+};
+function lerp(a,b,t){
+  if(typeof a==='number'&&typeof b==='number')return a+(b-a)*t;
+  if(a==null)return b; if(b==null)return a;
+  if(Array.isArray(a))return a.map((v,i)=>lerp(v,b[i],t));
+  if(typeof a==='object'){const o={};new Set([...Object.keys(a),...Object.keys(b)]).forEach(k=>o[k]=lerp(a[k],b[k],t));return o;}
+  return t<.5?a:b;
+}
+const F = n => n.toFixed(1);
+function svgBody(p,dark){
+  const q=p.pts,e=p.ex||{},ink='#25241F',far='#C9BCA8';let s='';
+  s+=`<line x1="12" y1="183" x2="188" y2="183" stroke="#D9D0C0" stroke-width="3" stroke-linecap="round"/>`;
+  if(e.mat)s+=`<rect x="22" y="180" width="156" height="6" rx="3" fill="#CDBFA8"/>`;
+  if(e.wall!=null)s+=`<rect x="${F(e.wall)}" y="28" width="7" height="155" rx="2" fill="#D9CDB9"/>`;
+  if(e.roller)s+=`<circle cx="${F(e.roller[0])}" cy="${F(e.roller[1])}" r="10" fill="#BFAE95" stroke="#9D876B" stroke-width="2"/>`;
+  if(e.ball)s+=`<circle cx="${F(e.ball[0])}" cy="${F(e.ball[1])}" r="6.5" fill="#9D876B"/>`;
+  const pl=(arr,c,w)=>`<polyline points="${arr.map(v=>F(v[0])+','+F(v[1])).join(' ')}" fill="none" stroke="${c}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round"/>`;
+  s+=pl([q.neck,q.eF,q.hF],far,7)+pl([q.hip,q.kF,q.anF,q.tF],far,7);
+  const mx=(q.hip[0]+q.neck[0])/2,my=(q.hip[1]+q.neck[1])/2,dx=q.neck[0]-q.hip[0],dy=q.neck[1]-q.hip[1],L=Math.hypot(dx,dy)||1;
+  const cx=mx+(-dy/L)*p.bend,cy=my+(dx/L)*p.bend;
+  s+=`<path d="M${F(q.hip[0])} ${F(q.hip[1])} Q${F(cx)} ${F(cy)} ${F(q.neck[0])} ${F(q.neck[1])}" fill="none" stroke="${ink}" stroke-width="10" stroke-linecap="round"/>`;
+  s+=pl([q.hip,q.kN,q.anN,q.tN],ink,7)+pl([q.neck,q.eN,q.hN],ink,7);
+  s+=`<circle cx="${F(q.head[0])}" cy="${F(q.head[1])}" r="10" fill="${ink}"/>`;
+  if(e.band)s+=`<line x1="${F(e.band[0][0])}" y1="${F(e.band[0][1])}" x2="${F(e.band[1][0])}" y2="${F(e.band[1][1])}" stroke="#9D876B" stroke-width="3" stroke-dasharray="5 3"/>`;
+  return s;
+}
+function svgTop(p){ // 위에서 본 앉은 자세 회전
+  const r=p.r;let s='';
+  s+=`<circle cx="100" cy="100" r="74" fill="none" stroke="#E2D8C6" stroke-width="2" stroke-dasharray="4 6"/>`;
+  s+=`<rect x="66" y="92" width="68" height="28" rx="12" fill="#D9CDB9"/>`;
+  s+=`<line x1="100" y1="176" x2="100" y2="150" stroke="#C9BCA8" stroke-width="6" stroke-linecap="round"/>`;
+  const a=r*Math.PI/180, ex=Math.cos(a)*40, ey=Math.sin(a)*40;
+  const sweep=r>=0?1:0, ax=100+Math.sin(-a)*-60, ay=100+Math.cos(a)*60;
+  s+=`<path d="M100 160 A60 60 0 0 ${sweep} ${F(100-Math.sin(a)*60)} ${F(100+Math.cos(a)*60)}" fill="none" stroke="#9D876B" stroke-width="4" stroke-linecap="round"/>`;
+  s+=`<line x1="${F(100-ex)}" y1="${F(100-ey)}" x2="${F(100+ex)}" y2="${F(100+ey)}" stroke="#25241F" stroke-width="14" stroke-linecap="round"/>`;
+  s+=`<circle cx="100" cy="100" r="14" fill="#25241F"/>`;
+  s+=`<circle cx="${F(100-Math.sin(a)*15)}" cy="${F(100+Math.cos(a)*15)}" r="4" fill="#F0EADD"/>`;
+  if(p.band)s+=`<line x1="${F(100+ex)}" y1="${F(100+ey)}" x2="178" y2="40" stroke="#9D876B" stroke-width="3" stroke-dasharray="5 3"/>`;
+  s+=`<text x="100" y="196" text-anchor="middle" font-size="11" fill="#77736B">위에서 본 모습</text>`;
+  return s;
+}
+function svgBack(p){ // 뒤에서 본 등 뒤 손 맞대기
+  const g=p.gap,y1=96-g/2,y2=96+g/2;let s='';
+  s+=`<rect x="70" y="56" width="60" height="88" rx="18" fill="#E2D8C6"/>`;
+  s+=`<circle cx="100" cy="40" r="13" fill="#25241F"/>`;
+  s+=`<polyline points="126,62 136,30 ${F(104)},${F(y1)}" fill="none" stroke="#25241F" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>`;
+  s+=`<polyline points="74,66 62,118 ${F(97)},${F(y2)}" fill="none" stroke="#25241F" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>`;
+  if(g>2)s+=`<line x1="100" y1="${F(y1+5)}" x2="100" y2="${F(y2-5)}" stroke="#9D876B" stroke-width="3" stroke-dasharray="3 3"/>`;
+  s+=`<rect x="78" y="144" width="18" height="34" rx="6" fill="#C9BCA8"/><rect x="104" y="144" width="18" height="34" rx="6" fill="#C9BCA8"/>`;
+  s+=`<text x="100" y="196" text-anchor="middle" font-size="11" fill="#77736B">뒤에서 본 모습</text>`;
+  return s;
+}
+function svgPose(p,label){
+  const inner=p.k==='top'?svgTop(p):p.k==='back'?svgBack(p):svgBody(p);
+  return `<svg viewBox="0 0 200 200" role="img" aria-label="${label||'자세 도식'}">${inner}</svg>`;
+}
+
+/* ---------- 10가지 가동성 평가 (데모 구성, 데이터로 분리) ---------- */
+const TESTS = [
+ {id:'t1',name:'양팔 앞으로 들어 올리기',region:'shoulder',target:'어깨 앞쪽',side:null,
+  setup:'바르게 서서 팔을 몸 옆에 내려요.',
+  how:['팔꿈치를 편 채 양팔을 앞으로 천천히 들어 올려요.','허리가 젖혀지기 직전에 멈춰요.','가장 높이 올라간 팔 위치를 아래 예시와 비교해요.'],
+  levels:['어깨 높이 아래','어깨 높이 근처','눈높이 위','귀 옆까지'],
+  desc:['약 80° 미만','약 80~119°','약 120~159°','약 160° 이상'],
+  pose:a=>P.arms(a), lv:[60,95,140,172], angle:{min:0,max:180,cuts:[80,120,160]}},
+ {id:'t2',name:'양팔 머리 위로 올리기',region:'overhead',target:'어깨·가슴·광배',side:null,
+  setup:'벽에 뒤통수·등·엉덩이를 붙이고 서요.',
+  how:['허리를 벽에 붙인 채 양팔을 머리 위로 올려요.','손등이 벽 쪽으로 가도록 끝까지 올려요.','팔이 멈춘 위치를 예시와 비교해요.'],
+  levels:['머리 앞에서 멈춤','머리 위 대각선','벽 가까이','손등이 벽에 닿음'],
+  desc:['약 130° 미만','약 130~149°','약 150~169°','약 170° 이상'],
+  pose:a=>P.arms(a,{ex:{wall:80}}), lv:[115,140,160,180], angle:{min:90,max:180,cuts:[130,150,170]}},
+ {id:'t3',name:'등 뒤로 손 맞대기',region:'shoulder',target:'어깨 회전',side:null,
+  setup:'바르게 서서 한 손은 위에서, 다른 손은 아래에서 등 뒤로 보내요.',
+  how:['두 손을 등 뒤에서 서로 가까이 가져가요.','반동 없이 천천히, 숨을 참지 않아요.','양쪽을 해 보고 더 어려운 쪽 기준으로 골라요.'],
+  levels:['한 뼘 이상 떨어짐','한 뼘 이내','손끝이 닿음','손가락이 겹침'],
+  desc:['두 손 사이가 넓어요','두 손이 가까워요','손끝끼리 닿아요','손가락을 걸 수 있어요'],
+  pose:g=>({k:'back',gap:g}), lv:[44,22,4,-10], angle:null},
+ {id:'t4',name:'앉아서 몸통 왼쪽 회전',region:'trunk',target:'등 위쪽 회전',side:'왼쪽',
+  setup:'의자에 앉아 무릎을 모으고 양팔을 가슴 앞에서 교차해요.',
+  how:['골반과 무릎은 앞을 향하게 고정해요.','가슴을 왼쪽으로 천천히 돌려요.','어깨선이 돌아간 정도를 예시와 비교해요.'],
+  levels:['약 15°','약 30°','약 45°','60° 이상'],desc:['조금 돌아가요','어깨가 비스듬해요','어깨가 대각선이에요','옆을 볼 만큼 돌아가요'],
+  pose:a=>({k:'top',r:-a}), lv:[15,30,45,62], angle:{min:0,max:90,cuts:[23,38,53]}},
+ {id:'t5',name:'앉아서 몸통 오른쪽 회전',region:'trunk',target:'등 위쪽 회전',side:'오른쪽',
+  setup:'의자에 앉아 무릎을 모으고 양팔을 가슴 앞에서 교차해요.',
+  how:['골반과 무릎은 앞을 향하게 고정해요.','가슴을 오른쪽으로 천천히 돌려요.','어깨선이 돌아간 정도를 예시와 비교해요.'],
+  levels:['약 15°','약 30°','약 45°','60° 이상'],desc:['조금 돌아가요','어깨가 비스듬해요','어깨가 대각선이에요','옆을 볼 만큼 돌아가요'],
+  pose:a=>({k:'top',r:a}), lv:[15,30,45,62], angle:{min:0,max:90,cuts:[23,38,53]}},
+ {id:'t6',name:'누워서 왼쪽 무릎 가슴으로 당기기',region:'hip',target:'고관절 굽힘',side:'왼쪽',
+  setup:'바닥에 바로 누워 두 다리를 펴요.',
+  how:['왼쪽 무릎을 두 손으로 잡고 가슴 쪽으로 당겨요.','반대쪽 다리는 바닥에 붙인 채 유지해요.','허벅지와 몸통 사이 각도를 예시와 비교해요.'],
+  levels:['직각에 못 미침','직각 정도','가슴 쪽으로 더 옴','허벅지가 가슴에 닿음'],desc:['약 90° 미만','약 90~109°','약 110~124°','약 125° 이상'],
+  pose:a=>P.supKnee(a), lv:[72,98,116,132], angle:{min:0,max:150,cuts:[90,110,125]}},
+ {id:'t7',name:'누워서 오른쪽 무릎 가슴으로 당기기',region:'hip',target:'고관절 굽힘',side:'오른쪽',
+  setup:'바닥에 바로 누워 두 다리를 펴요.',
+  how:['오른쪽 무릎을 두 손으로 잡고 가슴 쪽으로 당겨요.','반대쪽 다리는 바닥에 붙인 채 유지해요.','허벅지와 몸통 사이 각도를 예시와 비교해요.'],
+  levels:['직각에 못 미침','직각 정도','가슴 쪽으로 더 옴','허벅지가 가슴에 닿음'],desc:['약 90° 미만','약 90~109°','약 110~124°','약 125° 이상'],
+  pose:a=>P.supKnee(a), lv:[72,98,116,132], angle:{min:0,max:150,cuts:[90,110,125]}},
+ {id:'t8',name:'서서 상체 숙이기',region:'posterior',target:'햄스트링·허리 뒤쪽',side:null,
+  setup:'두 발을 골반 너비로 벌리고 무릎을 펴고 서요.',
+  how:['무릎을 굽히지 않고 상체를 천천히 숙여요.','손끝이 닿는 가장 낮은 위치에서 멈춰요.','손끝 위치를 예시와 비교해요.'],
+  levels:['무릎까지','정강이 중간','발목까지','바닥에 닿음'],desc:['손끝이 무릎 근처','손끝이 정강이','손끝이 발목','손끝이 바닥'],
+  pose:f=>P.fold(f), lv:[70,92,110,126], angle:null},
+ {id:'t9',name:'왼쪽 발목 앞으로 이동하기',region:'ankle',target:'발목 굽힘',side:'왼쪽',
+  setup:'벽을 보고 오른쪽 무릎을 꿇어 왼발을 앞에 둬요.',
+  how:['왼발 뒤꿈치를 바닥에 붙여요.','뒤꿈치가 뜨지 않는 범위에서 무릎을 벽 쪽으로 밀어요.','정강이가 기운 정도를 예시와 비교해요.'],
+  levels:['거의 수직','발끝 근처','발끝을 조금 넘음','발끝을 충분히 넘음'],desc:['약 15° 미만','약 15~24°','약 25~34°','약 35° 이상'],
+  pose:s=>P.kneel(s,{wall:true}), lv:[8,20,30,42], angle:{min:0,max:50,cuts:[15,25,35]}},
+ {id:'t10',name:'오른쪽 발목 앞으로 이동하기',region:'ankle',target:'발목 굽힘',side:'오른쪽',
+  setup:'벽을 보고 왼쪽 무릎을 꿇어 오른발을 앞에 둬요.',
+  how:['오른발 뒤꿈치를 바닥에 붙여요.','뒤꿈치가 뜨지 않는 범위에서 무릎을 벽 쪽으로 밀어요.','정강이가 기운 정도를 예시와 비교해요.'],
+  levels:['거의 수직','발끝 근처','발끝을 조금 넘음','발끝을 충분히 넘음'],desc:['약 15° 미만','약 15~24°','약 25~34°','약 35° 이상'],
+  pose:s=>P.kneel(s,{wall:true}), lv:[8,20,30,42], angle:{min:0,max:50,cuts:[15,25,35]}},
+];
+const testPose = (t,lvl) => t.pose(t.lv[lvl-1]);
+const angleToLevel = (t,a) => 1+t.angle.cuts.filter(c=>a>=c).length;
+
+/* ---------- 스트레칭 동작 데이터 (데모용 예시) ----------
+   tools: 필요한 도구 전부. 비어 있으면 맨몸·매트 없이 가능.
+   video: 실제 영상 주소를 넣으면 도식 대신 영상이 재생됩니다. */
+const M = (id,name,regions,sports,purposes,tools,work,sides,stage,level,cue,tips,poses) =>
+  ({id,name,regions,sports,purposes,tools,work,sides,stage,level,cue,tips,poses,video:''});
+const MOVES = [
+ // 맨몸 · 매트 없이
+ M('armcircle','팔 원 그리기',['shoulder','overhead'],['swim','crossfit','golf','strength'],['pre'],[],40,false,3,'쉬움','팔을 편 채 작은 원에서 큰 원으로 천천히 돌려요.',['앞뒤 방향을 모두 돌려요','어깨가 귀로 올라가지 않게 해요'],[P.arms(10),P.arms(185)]),
+ M('legswing','레그 스윙 앞뒤',['posterior','hip'],['run','golf','other'],['pre'],[],20,true,3,'쉬움','벽을 짚고 한쪽 다리를 앞뒤로 리듬 있게 흔들어요.',['상체는 세운 채 유지해요','반동 범위를 조금씩 넓혀요'],[P.stand({lN:[50,50],aN:[30,40]}),P.stand({lN:[-30,-30],aN:[30,40]})]),
+ M('legswinglat','레그 스윙 좌우',['hip'],['run','crossfit','other'],['pre'],[],20,true,3,'쉬움','골반은 고정하고 다리만 몸 앞을 가로질러 흔들어요.',['지지하는 무릎은 살짝 굽혀요','허리가 돌아가지 않게 해요'],[P.stand({lN:[28,28],aN:[70,80]}),P.stand({lN:[-12,-12],aN:[70,80]})]),
+ M('lungereach','런지 앤 리치',['hip','overhead'],['run','crossfit','strength'],['pre'],[],40,false,3,'보통','한 발 앞으로 런지한 뒤 양팔을 머리 위로 뻗고 돌아와요.',['앞무릎은 발 방향으로','좌우를 번갈아 해요'],[P.stand(),P.kneel(14,{aN:[180,180],hN:null,t:178})]),
+ M('squathold','딥 스쿼트 홀드',['ankle','hip'],['crossfit','strength','other'],['pre','post'],[],40,false,2,'보통','뒤꿈치를 붙이고 가장 깊은 자세에서 가슴을 세워요.',['팔꿈치로 무릎을 바깥으로 밀어요','뒤꿈치가 뜨면 범위를 줄여요'],[P.stand({aN:[80,90]}),B({hip:[92,158],t:162,aN:[90,100],aF:[85,95],fN:[106,G],fF:[100,G],kS:1})]),
+ M('trunkrot','서서 몸통 회전',['trunk'],['golf','swim','other'],['pre'],[],30,false,3,'쉬움','골반은 앞을 보고 가슴만 좌우로 번갈아 돌려요.',['팔은 가슴 앞에서 가볍게 교차','숨을 내쉬며 돌려요'],[{k:'top',r:-45},{k:'top',r:45}]),
+ M('hinge','힙 힌지',['posterior','hip'],['strength','crossfit','golf','run'],['pre'],[],30,false,3,'쉬움','엉덩이를 뒤로 보내며 등을 편 채 상체를 숙였다 세워요.',['등은 곧게 유지해요','무릎은 살짝만 굽혀요'],[P.fold(5),P.fold(72)]),
+ M('wallankle','벽 앞 발목 드릴',['ankle'],['run','crossfit','strength'],['pre','post'],[],30,true,2,'쉬움','뒤꿈치를 붙인 채 무릎을 벽 쪽으로 밀었다 돌아와요.',['발 아치가 무너지지 않게','통증 없는 범위에서'],[P.kneel(6,{wall:true}),P.kneel(36,{wall:true})]),
+ M('wallslide','월 슬라이드',['overhead','shoulder'],['swim','crossfit','strength'],['pre'],[],30,false,3,'쉬움','등과 팔을 벽에 붙인 채 팔을 위아래로 밀어 올려요.',['허리가 벽에서 뜨지 않게','갈비뼈를 아래로 눌러요'],[P.arms(80,{ex:{wall:80}}),P.arms(172,{ex:{wall:80}})]),
+ M('kneehug','서서 무릎 당기기',['hip','posterior'],['run','other'],['pre'],[],20,true,3,'쉬움','한쪽 무릎을 가슴으로 당겨 2초 머물고 내려요.',['지지 다리는 곧게','한 걸음씩 번갈아 해도 좋아요'],[P.stand(),P.stand({lN:[135,10],hN:add(add([100,111],135,LEN.th),0,0),eS:1})]),
+ M('sidereach','서서 옆구리 늘리기',['trunk','overhead'],['golf','swim'],['pre','post'],[],20,true,2,'쉬움','한 팔을 머리 위로 뻗고 반대쪽으로 몸을 기울여요.',['골반이 밀리지 않게','숨을 길게 내쉬어요'],[P.arms(175),P.arms(160,{t:166})]),
+ M('anklecircle','발목 돌리기',['ankle'],['run','other','golf'],['pre'],[],20,true,3,'쉬움','한 발을 들어 발목을 크게 원을 그리며 돌려요.',['양방향 모두','벽을 짚어도 좋아요'],[P.stand({lN:[30,10,60],aN:[40,50]}),P.stand({lN:[30,10,130],aN:[40,50]})]),
+ M('wallpush','벽 스캐풀라 푸시업',['shoulder'],['swim','strength','crossfit'],['pre'],[],30,false,3,'쉬움','팔은 편 채 날개뼈만 모았다 벌려요.',['팔꿈치는 굽히지 않아요','목에 힘을 빼요'],[B({hip:[92,111],t:160,hN:[144,66],eS:-1,fN:[100,G],fF:[94,G],ex:{wall:146},bend:3}),B({hip:[94,111],t:160,hN:[144,66],eS:-1,fN:[100,G],fF:[94,G],ex:{wall:146},bend:-4})]),
+ M('quadstand','서서 대퇴사두 스트레칭',['hip'],['run','crossfit','strength','other'],['post'],[],30,true,2,'쉬움','한쪽 발목을 잡아 뒤꿈치를 엉덩이 쪽으로 당겨요.',['무릎은 아래를 향하게','엉덩이를 살짝 조여요'],[P.stand({lN:[2,-165],hN:add(add([100,111],2,LEN.th),-165,LEN.sh),eS:-1}),P.stand({lN:[-8,-172],hN:add(add([100,111],-8,LEN.th),-172,LEN.sh),eS:-1})]),
+ M('calfwall','벽 종아리 스트레칭',['ankle'],['run','crossfit','other'],['post'],[],30,true,2,'쉬움','벽을 짚고 뒷다리를 펴서 뒤꿈치를 바닥으로 눌러요.',['뒷발 끝은 앞을 향하게','무릎을 살짝 굽혀도 좋아요'],[B({hip:[92,110],t:160,hN:[146,70],eS:-1,fN:[118,G],fF:[62,G],ex:{wall:148}}),B({hip:[99,112],t:158,hN:[146,70],eS:-1,fN:[118,G],fF:[62,G],ex:{wall:148}})]),
+ M('hamstand','서서 햄스트링 스트레칭',['posterior'],['run','golf','strength'],['post'],[],30,true,2,'쉬움','한 발을 앞에 두고 발끝을 들어 엉덩이를 뒤로 보내요.',['등을 둥글게 말지 않아요','앞다리 무릎은 부드럽게 폄'],[B({hip:[90,112],t:175,fN:[136,G],fF:[92,G],toeN:170,hN:[112,128],eS:1}),B({hip:[84,116],t:115,fN:[136,G],fF:[92,G],toeN:170,hN:[126,150],eS:1})]),
+ M('doorchest','문틀 가슴 스트레칭',['shoulder'],['swim','strength','crossfit'],['post'],[],30,true,2,'쉬움','팔꿈치를 어깨 높이로 문틀에 대고 몸을 앞으로 기울여요.',['어깨가 앞으로 말리지 않게','당김이 느껴지면 멈춰요'],[P.stand({aN:[-90,180],ex:{wall:72}}),P.stand({aN:[-100,175],t:172,hip:[106,111],ex:{wall:72}})]),
+ M('crossbody','크로스바디 어깨 스트레칭',['shoulder'],['swim','golf','strength'],['post'],[],25,true,2,'쉬움','한 팔을 가슴 앞으로 가로질러 반대 손으로 당겨요.',['어깨는 내린 채','팔꿈치 위를 잡아요'],[P.stand({aN:[88,88],aF:[70,110]}),P.stand({aN:[80,80],aF:[64,104]})]),
+ M('traps','상부 승모 스트레칭',['shoulder'],['other','swim','golf','strength'],['post'],[],20,true,2,'쉬움','귀를 어깨 쪽으로 기울이고 반대 어깨는 아래로 내려요.',['손으로 머리를 가볍게만 보조','턱을 당겨요'],[P.stand({hd:0}),P.stand({hd:28})]),
+ M('standfold','서서 상체 숙이기',['posterior'],['run','golf','other'],['post'],[],40,false,2,'쉬움','무릎을 살짝 굽히고 상체를 힘 빼고 늘어뜨려요.',['목에 힘을 빼요','올라올 땐 천천히'],[P.fold(60),P.fold(115)]),
+ M('wallrot','벽 짚고 흉추 회전',['trunk'],['golf','swim','other'],['pre','post'],[],25,true,2,'쉬움','벽 옆에 서서 위쪽 팔을 열며 가슴을 벽 반대로 돌려요.',['골반은 고정','시선은 손을 따라가요'],[{k:'top',r:-10},{k:'top',r:-55}]),
+ M('walllat','벽 짚고 광배 늘리기',['overhead','shoulder'],['swim','crossfit','strength'],['pre','post'],[],30,false,2,'쉬움','벽에 손을 짚고 엉덩이를 뒤로 빼며 가슴을 바닥 쪽으로 눌러요.',['팔은 곧게','허리를 과하게 젖히지 않아요'],[B({hip:[88,113],t:105,hN:[146,72],eS:1,fN:[100,G],fF:[94,G],ex:{wall:148}}),B({hip:[80,116],t:96,hN:[146,76],eS:1,fN:[100,G],fF:[94,G],ex:{wall:148},bend:-4})]),
+ M('standhipflex','서서 고관절 앞 늘리기',['hip'],['run','golf','other'],['post'],[],30,true,2,'쉬움','다리를 앞뒤로 벌리고 엉덩이를 조이며 골반을 앞으로 밀어요.',['뒷다리 무릎은 살짝 굽혀요','허리를 꺾지 않아요'],[B({hip:[94,115],t:180,fN:[122,G],fF:[60,G],toeF:120,hN:[100,108],eS:-1}),B({hip:[100,121],t:184,fN:[122,G],fF:[60,G],toeF:120,hN:[106,114],eS:-1})]),
+ M('standfig4','서서 엉덩이 스트레칭',['hip'],['golf','run','strength'],['post'],[],30,true,2,'보통','한쪽 발목을 반대 무릎 위에 올리고 엉덩이를 뒤로 앉아요.',['벽이나 의자를 짚어도 좋아요','등은 곧게'],[B({hip:[96,122],t:170,lN:[80,-60],fF:[100,G],kSF:1,aN:[70,70]}),B({hip:[90,128],t:150,lN:[80,-60],fF:[100,G],kSF:1,aN:[70,70]})]),
+ M('hipturn','서서 힙 턴 드릴',['hip','trunk'],['golf'],['pre'],[],30,false,3,'쉬움','어드레스 자세로 서서 팔을 가슴에 교차하고 골반과 몸통을 좌우로 돌려요.',['무릎 각도는 유지','체중이 발 안쪽에 머물게'],[{k:'top',r:-38},{k:'top',r:38}]),
+ M('streamline','스트림라인 리치',['overhead','trunk'],['swim'],['pre'],[],30,false,3,'쉬움','양손을 포개 머리 위로 길게 뻗고 몸을 위로 늘렸다 풀어요.',['팔로 귀를 가볍게 누르듯','갈비뼈가 튀어나오지 않게'],[P.arms(150),P.arms(184)]),
+ M('armswing','팔 엇갈려 흔들기',['shoulder'],['swim','golf'],['pre'],[],30,false,3,'쉬움','한 팔은 앞으로, 다른 팔은 뒤로 엇갈려 크게 흔들어요.',['팔은 편 채 리듬 있게','몸통은 세운 채'],[P.stand({aN:[150,150],aF:[-35,-35]}),P.stand({aN:[-35,-35],aF:[150,150]})]),
+ M('ohsquat','맨손 오버헤드 스쿼트',['overhead','ankle'],['crossfit'],['pre'],[],40,false,3,'보통','양팔을 머리 위로 뻗은 채 천천히 앉았다 일어나요.',['팔이 앞으로 떨어지지 않게','뒤꿈치는 바닥에'],[P.arms(178),B({hip:[92,156],t:166,aN:[182,182],aF:[178,178],fN:[106,G],fF:[100,G],kS:1})]),
+ M('cossack','코삭 스쿼트',['hip','ankle'],['crossfit','strength'],['pre'],[],20,true,3,'보통','다리를 넓게 벌리고 한쪽으로 앉으며 반대 다리 안쪽을 늘려요.',['앉는 쪽 뒤꿈치는 바닥에','범위는 천천히 넓혀요'],[P.stand({aN:[80,90]}),B({hip:[94,150],t:168,aN:[88,96],aF:[84,92],fN:[112,G],fF:[70,G],kS:1,toeF:180})]),
+ M('march','하이니 마칭',['hip','posterior'],['run'],['pre'],[],30,false,3,'쉬움','제자리에서 무릎을 골반 높이까지 번갈아 올리며 걸어요.',['팔도 함께 흔들어요','상체는 세운 채'],[P.stand({lN:[95,0],aN:[-30,-30],aF:[40,40]}),P.stand({lF:[95,0],aN:[40,40],aF:[-30,-30]})]),
+ M('calfraise','카프 레이즈',['ankle'],['run','crossfit'],['pre'],[],30,false,3,'쉬움','벽을 가볍게 짚고 뒤꿈치를 들었다 천천히 내려요.',['엄지발가락 쪽으로 올라가요','내려올 땐 천천히'],[P.stand({aN:[60,70]}),P.stand({hip:[100,103],fN:[102,168],fF:[96,168],toeN:150,toeF:150,aN:[60,70]})]),
+ M('ytw','Y-T-W 레이즈',['shoulder','overhead'],['strength','swim'],['pre'],[],30,false,3,'쉬움','상체를 살짝 숙이고 팔로 Y·T·W 모양을 차례로 만들어요.',['날개뼈를 모아요','허리는 곧게'],[P.fold(40,{aN:[100,100],hN:null}),P.fold(40,{aN:[170,170],hN:null})]),
+ M('chestopen','깍지 끼고 가슴 열기',['shoulder','overhead'],['swim','strength','golf'],['post'],[],30,false,2,'쉬움','등 뒤에서 깍지를 끼고 팔을 뒤로 뻗으며 가슴을 열어요.',['턱은 당긴 채','어깨를 귀에서 멀리'],[P.stand({aN:[-20,-20]}),P.stand({aN:[-48,-48],t:184})]),
+ M('hipside','서서 고관절 옆 늘리기',['hip'],['golf','run','crossfit'],['post'],[],25,true,2,'쉬움','다리를 교차하고 골반을 옆으로 밀어 엉덩이 옆을 늘려요.',['상체는 반대쪽으로 살짝','숨을 길게'],[P.stand(),P.stand({hip:[106,113],t:172,aN:[170,170]})]),
+ // 매트 필요
+ M('catcow','캣카우',['trunk'],['other','swim','golf','crossfit','strength','run'],['pre','post'],['mat'],40,false,2,'쉬움','네발 자세에서 내쉬며 등을 둥글게, 들이쉬며 가슴을 열어요.',['손은 어깨 아래, 무릎은 골반 아래','호흡에 맞춰 천천히'],[P.quad({bend:-10,hd:-20,ex:{mat:1}}),P.quad({bend:10,hd:25,ex:{mat:1}})]),
+ M('wgs','월드 그레이티스트 스트레치',['hip','trunk'],['run','crossfit','golf','strength'],['pre'],['mat'],30,true,3,'보통','런지에서 팔꿈치를 발 안쪽으로 내렸다가 팔을 하늘로 뻗어요.',['뒷다리는 길게','시선은 위로 뻗은 손'],[P.kneel(16,{t:140,hN:[124,G],ex:{mat:1}}),P.kneel(16,{t:160,aN:[180,180],hN:null,hF:[124,G],ex:{mat:1}})]),
+ M('9090','90/90 힙 스위치',['hip'],['golf','crossfit','strength'],['pre'],['mat'],40,false,2,'보통','바닥에 앉아 두 무릎을 90도로 두고 좌우로 천천히 넘겨요.',['상체는 세운 채','손으로 바닥을 짚어도 돼요'],[P.seat({t:182,lN:[70,-60],lF:[-100,-90],hN:[66,G],ex:{mat:1}}),P.seat({t:170,lN:[40,-80],lF:[-70,-100],hN:[66,G],ex:{mat:1}})]),
+ M('thread','스레드 더 니들',['trunk','shoulder'],['golf','swim','other'],['pre','post'],['mat'],30,true,2,'쉬움','네발 자세에서 한 팔을 반대쪽 아래로 넣었다가 하늘로 열어요.',['골반은 고정','따라가는 시선'],[P.quad({aN:[-40,-60],ex:{mat:1}}),P.quad({aN:[175,175],ex:{mat:1}})]),
+ M('child','차일드 포즈',['overhead','posterior'],['swim','crossfit','other'],['post'],['mat'],40,false,2,'쉬움','엉덩이를 뒤꿈치 쪽으로 보내고 팔을 앞으로 길게 뻗어요.',['이마를 바닥에','숨을 등 쪽으로 보내요'],[B({hip:[80,156],neck:[122,168],hN:[170,G],eS:1,lN:[58,-90,-90],ex:{mat:1}}),B({hip:[76,160],neck:[119,172],hN:[176,G],eS:1,lN:[52,-92,-90],ex:{mat:1}})]),
+ M('pigeon','비둘기 자세',['hip'],['run','golf','strength','other'],['post'],['mat'],40,true,2,'보통','앞다리를 접어 앞에 두고 뒷다리는 뒤로 길게 뻗어요.',['골반은 정면','상체를 천천히 숙여요'],[B({hip:[100,160],t:180,lN:[98,-90,-90],fF:[38,G],toeF:-90,hN:[118,G],eS:-1,ex:{mat:1}}),B({hip:[98,162],t:110,lN:[98,-90,-90],fF:[38,G],toeF:-90,hN:[160,G],eS:1,ex:{mat:1}})]),
+ M('kneechest','누워서 무릎 당기기',['hip','posterior'],['run','other'],['post'],['mat'],30,true,2,'쉬움','누워서 한쪽 무릎을 두 손으로 가슴 쪽으로 당겨요.',['반대 다리는 바닥에','어깨 힘을 빼요'],[P.supKnee(100,{ex:{mat:1}}),P.supKnee(128,{ex:{mat:1}})]),
+ M('halfkneel','하프 닐링 고관절 스트레칭',['hip'],['run','golf','crossfit','strength'],['pre','post'],['mat'],30,true,2,'쉬움','한쪽 무릎을 꿇고 엉덩이를 조이며 골반을 앞으로 밀어요.',['허리를 꺾지 않아요','상체는 세워요'],[P.kneel(4,{t:180,ex:{mat:1}}),P.kneel(18,{t:184,ex:{mat:1}})]),
+ M('openbook','오픈북',['trunk','shoulder'],['golf','swim'],['pre','post'],['mat'],30,true,2,'쉬움','옆으로 누워 무릎을 굽히고 위쪽 팔을 반대편으로 크게 열어요.',['무릎이 떨어지지 않게','팔을 따라 시선 이동'],[P.supine({aN:[110,110],ex:{mat:1}}),P.supine({aN:[250,250],ex:{mat:1}})]),
+ M('frog','프로그 스트레칭',['hip'],['crossfit','strength'],['post'],['mat'],40,false,2,'보통','네발 자세에서 무릎을 넓게 벌리고 엉덩이를 천천히 뒤로 보내요.',['발은 무릎과 일직선','허리를 둥글게 말지 않아요'],[P.quad({ex:{mat:1}}),P.quad({hip:[114,147],neck:[70,134],aN:[10,10],ex:{mat:1}})]),
+ M('sphinx','스핑크스 자세',['trunk','overhead'],['swim','other'],['post'],['mat'],30,false,2,'쉬움','엎드려 팔꿈치로 상체를 받치고 가슴을 앞으로 내밀어요.',['어깨를 귀에서 멀리','엉덩이 힘을 빼요'],[B({hip:[110,172],t:-82,hN:[62,G],eS:-1,lN:[90,90,0],ex:{mat:1}}),B({hip:[110,172],t:-112,hN:[70,G],eS:-1,lN:[90,90,0],ex:{mat:1}})]),
+ M('suptwist','누워서 몸통 비틀기',['trunk'],['golf','other'],['post'],['mat'],30,true,2,'쉬움','누워서 무릎을 세우고 두 무릎을 한쪽으로 천천히 넘겨요.',['양 어깨는 바닥에','숨을 길게'],[P.supine({aN:[-90,-90],ex:{mat:1}}),P.supine({aN:[-90,-90],fN:[128,170],ex:{mat:1}})]),
+ M('inchworm','인치웜',['posterior','shoulder'],['crossfit','run','strength'],['pre'],['mat'],40,false,3,'보통','상체를 숙여 손을 짚고 플랭크까지 걸어 나갔다 돌아와요.',['무릎은 최대한 펴요','허리가 처지지 않게'],[P.fold(118,{ex:{mat:1}}),B({hip:[96,150],neck:[140,136],hN:[146,G],eS:-1,fN:[46,G],fF:[40,G],toeN:150,ex:{mat:1}})]),
+ M('kneelankle','무릎 꿇고 발목 밀기',['ankle'],['crossfit','strength','run'],['pre'],['mat'],30,true,2,'쉬움','한쪽 무릎을 꿇고 앞발 뒤꿈치를 붙인 채 무릎을 앞으로 밀어요.',['뒤꿈치는 바닥에','리듬 있게 반복'],[P.kneel(6,{ex:{mat:1}}),P.kneel(34,{ex:{mat:1}})]),
+ // 밴드
+ M('pullapart','밴드 풀어파트',['shoulder'],['swim','strength','crossfit'],['pre'],['band'],30,false,3,'쉬움','가슴 앞에서 밴드를 잡고 날개뼈를 모으며 양옆으로 벌려요.',['손목은 곧게','어깨를 으쓱하지 않아요'],[P.arms(90,{ex:{band:['hN','hF']},aF:[88,88]}),P.arms(40,{aN:[95,30],aF:[60,10],ex:{band:['hN','hF']}})]),
+ M('passthrough','밴드 어깨 패스스루',['overhead','shoulder'],['swim','crossfit'],['pre'],['band'],30,false,3,'보통','밴드를 넓게 잡고 팔을 편 채 머리 위로 넘겼다 돌아와요.',['갈비뼈는 내린 채','어려우면 손 간격을 넓혀요'],[P.arms(40,{ex:{band:['hN','hF']}}),P.arms(215,{ex:{band:['hN','hF']}})]),
+ M('bandham','밴드 햄스트링 스트레칭',['posterior'],['run','golf','strength'],['post'],['band','mat'],40,true,2,'쉬움','누워서 발바닥에 밴드를 걸고 다리를 편 채 천천히 당겨요.',['반대 다리는 바닥에','무릎을 펴는 데 집중'],[P.supine({lN:[150,150,240],fF:null,lF:[90,90,180],hN:[90,120],eS:1,ex:{mat:1,band:['hN','tN']}}),P.supine({lN:[178,178,268],fF:null,lF:[90,90,180],hN:[84,116],eS:1,ex:{mat:1,band:['hN','tN']}})]),
+ M('bandankle','밴드 발목 모빌리제이션',['ankle'],['crossfit','strength','run'],['pre'],['band'],30,true,2,'보통','발목 앞쪽에 밴드를 걸어 뒤로 당기며 무릎을 앞으로 밀어요.',['뒤꿈치는 바닥에','통증이 있으면 멈춰요'],[P.kneel(8,{ex:{band:['anN',[30,G]]}}),P.kneel(32,{ex:{band:['anN',[30,G]]}})]),
+ M('bandlat','밴드 광배근 스트레칭',['overhead'],['crossfit','swim'],['post'],['band'],30,true,2,'쉬움','높은 곳에 건 밴드를 잡고 엉덩이를 뒤로 빼며 옆구리를 늘려요.',['팔은 곧게','숨을 옆구리로'],[P.fold(60,{hN:[150,70],eS:1,ex:{band:['hN',[186,40]]}}),P.fold(82,{hN:[152,78],eS:1,ex:{band:['hN',[186,40]]}})]),
+ M('bandrot','밴드 몸통 회전',['trunk'],['golf','other'],['pre'],['band'],30,true,3,'보통','옆에 건 밴드를 가슴 앞에서 잡고 몸통을 돌렸다 돌아와요.',['골반은 정면','천천히 되돌아와요'],[{k:'top',r:10,band:true},{k:'top',r:-45,band:true}]),
+ // 폼롤러
+ M('rtspine','폼롤러 흉추 굴리기',['trunk','overhead'],['swim','crossfit','golf'],['pre','post'],['roller'],40,false,1,'쉬움','등 위쪽 아래에 폼롤러를 두고 엉덩이를 들어 천천히 굴려요.',['허리 아래로는 굴리지 않아요','손으로 머리를 받쳐요'],[B({hip:[118,156],neck:[74,150],hN:[66,138],eS:1,fN:[146,G],kS:1,ex:{roller:[80,164]}}),B({hip:[126,158],neck:[82,152],hN:[74,140],eS:1,fN:[146,G],kS:1,ex:{roller:[80,164]}})]),
+ M('rcalf','폼롤러 종아리',['ankle'],['run','other'],['pre','post'],['roller'],30,true,1,'쉬움','앉아서 종아리 아래에 폼롤러를 두고 엉덩이를 들어 굴려요.',['발끝을 좌우로 돌려도 좋아요','아픈 지점은 천천히'],[P.seat({hip:[74,160],t:200,hN:[56,G],lN:[98,92,182],ex:{roller:[132,172]}}),P.seat({hip:[62,160],t:200,hN:[44,G],lN:[98,92,182],ex:{roller:[132,172]}})]),
+ M('rquad','폼롤러 허벅지 앞',['hip'],['run','strength','crossfit'],['post'],['roller'],30,true,1,'쉬움','엎드려 허벅지 앞에 폼롤러를 두고 팔꿈치로 밀며 굴려요.',['배에 힘을 줘요','무릎 위까지만'],[B({hip:[104,156],t:-100,hN:[66,G],eS:-1,fN:[166,G],kS:-1,toeN:0,ex:{roller:[122,168]}}),B({hip:[94,156],t:-100,hN:[56,G],eS:-1,fN:[156,G],kS:-1,toeN:0,ex:{roller:[122,168]}})]),
+ M('rlat','폼롤러 광배근',['overhead','shoulder'],['swim','crossfit'],['pre','post'],['roller'],30,true,1,'쉬움','옆으로 누워 겨드랑이 아래에 폼롤러를 두고 천천히 굴려요.',['아래 팔은 머리 위로','몸을 살짝 앞뒤로 돌려요'],[B({hip:[118,168],neck:[72,158],aN:[-90,-90],fN:[176,G],kS:1,ex:{roller:[74,170]}}),B({hip:[124,168],neck:[78,160],aN:[-90,-90],fN:[182,G],kS:1,ex:{roller:[74,170]}})]),
+ M('rham','폼롤러 햄스트링',['posterior'],['run','golf'],['post'],['roller'],30,true,1,'쉬움','앉아서 허벅지 뒤에 폼롤러를 두고 손으로 밀며 굴려요.',['다리는 편 채','반대 다리를 올리면 더 강해요'],[P.seat({hip:[74,156],t:200,hN:[56,G],lN:[94,94,184],ex:{roller:[104,168]}}),P.seat({hip:[66,156],t:200,hN:[48,G],lN:[94,94,184],ex:{roller:[104,168]}})]),
+ // 마사지볼
+ M('ballglute','마사지볼 엉덩이 이완',['hip'],['golf','run','strength'],['pre','post'],['ball'],30,true,1,'쉬움','앉아서 엉덩이 아래에 공을 두고 작은 원을 그리며 움직여요.',['한쪽 다리를 반대 무릎에 올려요','숨을 참지 않아요'],[P.seat({hip:[92,160],t:196,hN:[72,G],lN:[60,150],lF:[80,0],ex:{ball:[94,170]}}),P.seat({hip:[86,160],t:196,hN:[66,G],lN:[60,150],lF:[80,0],ex:{ball:[94,170]}})]),
+ M('ballpec','마사지볼 가슴 이완',['shoulder'],['swim','strength'],['post'],['ball'],30,true,1,'쉬움','벽과 가슴 사이에 공을 두고 몸을 기대 천천히 움직여요.',['쇄골 아래 가슴 쪽','통증이 강하면 압을 줄여요'],[P.stand({hip:[104,111],t:174,aN:[-20,-10],ex:{wall:142,ball:[136,80]}}),P.stand({hip:[106,111],t:172,aN:[-20,-10],ex:{wall:142,ball:[136,86]}})]),
+ M('ballfoot','마사지볼 발바닥 굴리기',['ankle'],['run','other'],['pre','post'],['ball'],30,true,1,'쉬움','서서 발바닥 아래에 공을 두고 앞뒤로 굴려요.',['체중은 조금씩만','발가락 쪽부터 뒤꿈치까지'],[P.stand({fN:[106,166],toeN:100,kS:1,ex:{ball:[110,175]}}),P.stand({fN:[96,166],toeN:100,kS:1,ex:{ball:[110,175]}})]),
+ M('ballupper','마사지볼 날개뼈 안쪽',['shoulder','trunk'],['golf','swim'],['post'],['ball'],30,true,1,'쉬움','벽에 등을 대고 날개뼈 안쪽에 공을 둔 채 무릎을 굽혔다 펴요.',['척추 위는 피해요','팔을 가슴 앞에 교차'],[P.stand({hip:[96,111],t:184,fN:[112,G],fF:[106,G],aN:[90,150],ex:{wall:80,ball:[86,80]}}),P.stand({hip:[98,121],t:184,fN:[112,G],fF:[106,G],aN:[90,150],ex:{wall:80,ball:[86,92]}})]),
+];
+const MOVE = Object.fromEntries(MOVES.map(m=>[m.id,m]));
+
+/* ---------- 상태 저장 (브라우저 localStorage) ---------- */
+const KEY='wod-demo-v1';
+let mem=null;
+function blank(){return {v:1,onboarded:false,assessments:[],sessions:[],draft:null,player:null,prefs:{sport:null,purpose:null,tools:[],minutes:null,sound:true,quick:false},storageOk:true};}
+function load(){try{const r=localStorage.getItem(KEY);if(r){const s=JSON.parse(r);return Object.assign(blank(),s,{prefs:Object.assign(blank().prefs,s.prefs||{})});}}catch(e){const b=blank();b.storageOk=false;return b;}return blank();}
+let S=load();
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){S.storageOk=false;}}
+
+/* ---------- 점수 계산 (데모 평가 기준) ---------- */
+function scoreAssessment(a){
+  const regions={};
+  REGION_KEYS.forEach(r=>{
+    const vals=TESTS.filter(t=>t.region===r).map(t=>a.answers[t.id]).filter(v=>typeof v==='number').map(v=>LEVEL_SCORE[v]);
+    regions[r]=vals.length?Math.round(vals.reduce((x,y)=>x+y,0)/vals.length):null;
+  });
+  const ev=REGION_KEYS.filter(r=>regions[r]!=null);
+  const complete=ev.length===REGION_KEYS.length;
+  const overall=complete?Math.round(ev.reduce((x,r)=>x+regions[r],0)/ev.length):null;
+  const answered=TESTS.filter(t=>typeof a.answers[t.id]==='number').length;
+  return {regions,overall,complete,answered,evaluated:ev};
+}
+const sortedA = () => [...S.assessments].sort((a,b)=>new Date(a.date)-new Date(b.date));
+const latestA = () => {const l=sortedA();return l[l.length-1]||null;};
+const prevA = () => {const l=sortedA();return l.length>1?l[l.length-2]:null;};
+const latestScores = () => {const a=latestA();return a?scoreAssessment(a).regions:null;};
+function reassessDue(){const a=latestA();if(!a)return false;return Date.now()>=new Date(addMonth(a.date)).getTime();}
+
+/* ---------- 추천 엔진 (데모용 규칙) ---------- */
+function moveSec(m){return PREP+m.work*(m.sides?2:1)+(m.sides?SWITCH:0);}
+function recommend(c,scores){
+  const tools=c.tools.includes('none')?[]:c.tools;
+  const sportRegs=SPORT_REGIONS[c.sport]||[];
+  const evals=REGION_KEYS.filter(r=>scores&&scores[r]!=null).sort((a,b)=>scores[a]-scores[b]||REGION_KEYS.indexOf(a)-REGION_KEYS.indexOf(b));
+  const low=evals.filter(r=>scores[r]<75).slice(0,c.sport==='other'?3:2);
+  // 1) 목적 2) 보유 도구 3) 종목 관련 부위·낮은 점수 부위와 연관된 동작만 후보로
+  const related=c.sport==='other'?(m=>!low.length||m.sports.includes('other')||low.includes(m.regions[0]))
+    :(m=>m.sports.includes(c.sport)||sportRegs.includes(m.regions[0])||low.includes(m.regions[0]));
+  const cands=MOVES.filter(m=>m.purposes.includes(c.purpose)&&m.tools.every(t=>tools.includes(t))&&related(m));
+  const w={};
+  REGION_KEYS.forEach(r=>{
+    w[r]=(c.sport==='other'&&!evals.length)?1:0;
+    if(sportRegs.includes(r))w[r]+=3;
+    if(scores&&scores[r]!=null)w[r]+=(100-scores[r])/100;
+    if(low.includes(r))w[r]+=2+(75-scores[r])/25;
+  });
+  const base=m=>w[m.regions[0]]+0.5*m.regions.slice(1).reduce((s,r)=>s+w[r],0)+(m.sports.includes(c.sport)?1.5:0);
+  const budget=c.minutes*60, picked=[], cnt={};REGION_KEYS.forEach(r=>cnt[r]=0);
+  let remain=budget;
+  for(;;){
+    let best=null,bestE=-Infinity;
+    for(const m of cands){
+      if(picked.includes(m)||moveSec(m)>remain)continue;              // 중복 제외·시간 제한
+      const e=base(m)-2.5*cnt[m.regions[0]]-0.6*m.regions.slice(1).reduce((s,r)=>s+cnt[r],0); // 부위 쏠림 방지
+      if(e>bestE+1e-9){best=m;bestE=e;}
+    }
+    if(!best)break;
+    picked.push(best);remain-=moveSec(best);
+    best.regions.forEach((r,i)=>cnt[r]+=i?0.5:1);
+  }
+  const moves=picked.map((m,i)=>({m,i})).sort((a,b)=>a.m.stage-b.m.stage||a.i-b.i).map(x=>x.m);
+  const total=moves.reduce((s,m)=>s+moveSec(m),0);
+  const why=m=>{const r=[...m.regions].sort((a,b)=>w[b]-w[a])[0];
+    if(low.includes(r))return `${rn(r)} 평가 결과(${scores[r]}점)를 반영한 동작이에요.`;
+    if(sportRegs.includes(r))return `${SPORTS[c.sport]}에 많이 쓰이는 ${jo(rn(r),'을','를')} 위한 동작이에요.`;
+    return '부위가 한쪽에 몰리지 않도록 넣은 동작이에요.';};
+  const sp=SPORTS[c.sport];let reason;
+  const lowOnly=low.filter(r=>!sportRegs.includes(r)),lowIn=low.filter(r=>sportRegs.includes(r));
+  if(c.sport==='other'){
+    reason=low.length?`이번 평가에서 점수가 낮았던 ${jo(joinR(low),'을','를')} 중심으로 구성했어요.`:evals.length?'평가 점수가 고르게 높아 여러 부위를 균형 있게 구성했어요.':'아직 평가 결과가 없어 여러 부위를 고르게 구성했어요.';
+  }else if(!evals.length){
+    reason=`아직 평가 결과가 없어 ${sp}에 많이 쓰이는 ${jo(joinR(sportRegs),'을','를')} 중심으로 구성했어요. 평가를 마치면 내 점수가 반영돼요.`;
+  }else{
+    reason=`${sp}에 많이 쓰이는 ${joinR(sportRegs)}`;
+    reason+=lowOnly.length?`${hasBatchim(rn(sportRegs[sportRegs.length-1]))?'과':'와'} 이번 평가에서 점수가 낮았던 ${jo(joinR(lowOnly),'을','를')} 중심으로 구성했어요.`:`${hasBatchim(rn(sportRegs[sportRegs.length-1]))?'을':'를'} 중심으로 구성했어요.`;
+    if(lowIn.length)reason+=` 특히 ${jo(joinR(lowIn),'은','는')} 평가 점수가 낮아 비중을 높였어요.`;
+  }
+  const priority=low.length?low:[];
+  return {moves,total,budget,low,priority,sportRegs,reason,why,short:budget-total>60,candidates:cands.length};
+}
+function currentRoutine(){const p=S.prefs;if(!p.sport||!p.purpose||!p.tools.length||!p.minutes)return null;return recommend(p,latestScores());}
+function routineTitle(c){return `내 몸에 맞춘 ${SPORTS[c.sport]} ${c.purpose==='pre'?'준비':'정리'} 루틴`;}
+function routineSub(c){return `${SPORTS[c.sport]} ${c.purpose==='pre'?'전 준비':'후 정리'} 루틴`;}
+
+/* ---------- 데모(예시 사용자) 데이터 ---------- */
+function demoData(){
+  const ans=a=>Object.fromEntries(TESTS.map((t,i)=>[t.id,a[i]]));
+  const assessments=[
+    {id:'demo-a1',date:daysAgo(96),answers:ans([2,2,1,2,1,2,2,1,1,2]),angles:{},demo:true},
+    {id:'demo-a2',date:daysAgo(65),answers:ans([3,2,2,2,2,3,2,2,2,2]),angles:{},demo:true},
+    {id:'demo-a3',date:daysAgo(34),answers:ans([3,3,2,3,2,3,3,2,1,2]),angles:{t1:140},demo:true},
+  ];
+  const mk=(id,days,sport,purpose,tools,minutes,status,feel)=>{
+    const r=recommend({sport,purpose,tools,minutes},scoreAssessment(assessments[2]).regions);
+    const done=status==='complete'?r.moves.length:Math.ceil(r.moves.length/2);
+    const doneMoves=r.moves.slice(0,done);
+    const actual=status==='complete'?r.total:doneMoves.reduce((s,m)=>s+moveSec(m),0);
+    return {id,date:daysAgo(days,7),sport,purpose,tools,minutes,quick:false,moves:r.moves.map(m=>m.id),total:r.moves.length,doneMoves:done,
+      plannedSec:r.total,actualSec:actual,status,feel,regions:[...new Set(doneMoves.map(m=>m.regions[0]))],demo:true};
+  };
+  const sessions=[mk('demo-s1',1,'run','pre',['none'],10,'complete','적당했어요'),mk('demo-s2',3,'run','post',['mat','roller'],15,'complete','따라 하기 쉬웠어요'),mk('demo-s3',6,'strength','pre',['band'],10,'partial','어려웠어요'),mk('demo-s4',12,'run','pre',['none'],5,'complete','적당했어요')];
+  return {assessments,sessions};
+}
+function loadDemo(){const d=demoData();S.assessments=S.assessments.filter(a=>!a.demo).concat(d.assessments);S.sessions=S.sessions.filter(s=>!s.demo).concat(d.sessions);S.onboarded=true;if(!S.prefs.sport)S.prefs.sport='run';save();}
+
+/* ---------- 화면 상태 ---------- */
+let ui={screen:S.player?'player':(S.onboarded?'home':'intro'),stack:[],sheet:null,modal:null,anglePanel:false,angleVal:null,detail:null,doneId:null,toast:null};
+let lastScreen=null;
+function go(screen,opts={}){if(opts.replace!==true&&ui.screen!==screen)ui.stack.push(ui.screen);ui.screen=screen;ui.sheet=null;ui.anglePanel=false;Object.assign(ui,opts.set||{});render();window.scrollTo(0,0);}
+function back(){const p=ui.stack.pop()||'home';ui.screen=p;ui.sheet=null;ui.anglePanel=false;render();window.scrollTo(0,0);}
+function tab(name){ui.stack=[];ui.screen=name;ui.sheet=null;render();window.scrollTo(0,0);}
+let toastT=null;
+function toast(msg){ui.toast=msg;renderLayer();clearTimeout(toastT);toastT=setTimeout(()=>{ui.toast=null;renderLayer();},2600);}
+
+/* ---------- 아이콘 ---------- */
+const I = {
+  back:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>',
+  close:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>',
+  gear:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.7 1.7 0 00-1.8-.3 1.7 1.7 0 00-1 1.5V21a2 2 0 11-4 0v-.1a1.7 1.7 0 00-1.1-1.5 1.7 1.7 0 00-1.8.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.7 1.7 0 00.3-1.8 1.7 1.7 0 00-1.5-1H3a2 2 0 110-4h.1a1.7 1.7 0 001.5-1.1 1.7 1.7 0 00-.3-1.8l-.1-.1a2 2 0 112.8-2.8l.1.1a1.7 1.7 0 001.8.3H9a1.7 1.7 0 001-1.5V3a2 2 0 114 0v.1a1.7 1.7 0 001 1.5 1.7 1.7 0 001.8-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.7 1.7 0 00-.3 1.8V9a1.7 1.7 0 001.5 1H21a2 2 0 110 4h-.1a1.7 1.7 0 00-1.5 1z"/></svg>',
+  home:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#77736B" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5L12 3l9 7.5V20a1 1 0 01-1 1h-5v-6h-6v6H4a1 1 0 01-1-1z"/></svg>',
+  mob:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#77736B" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
+  log:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#77736B" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="16" height="17" rx="2"/><path d="M8 2v4M16 2v4M8 11h8M8 15h5"/></svg>',
+  check:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
+  play:'<svg width="34" height="34" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>',
+  pause:'<svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg>',
+  prev:'<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6 5h2v14H6zM20 5v14L9 12z"/></svg>',
+  next:'<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M16 5h2v14h-2zM4 5v14l11-7z"/></svg>',
+  sound:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5L6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 010 7M18.5 5.5a9 9 0 010 13"/></svg>',
+  mute:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5L6 9H3v6h3l5 4z"/><path d="M22 9l-6 6M16 9l6 6"/></svg>',
+  angle:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 20h16M4 20L16 6"/><path d="M10 20a6 6 0 00-1.8-4.3"/></svg>',
+  sport:{
+    golf:'<svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 21V3l9 4-9 4"/><path d="M4 21h12"/></svg>',
+    swim:'<svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M2 16c2 1.5 4 1.5 6 0s4-1.5 6 0 4 1.5 6 0M2 20c2 1.5 4 1.5 6 0s4-1.5 6 0 4 1.5 6 0"/><circle cx="16" cy="6" r="2"/><path d="M6 12l4-4 3 3"/></svg>',
+    crossfit:'<svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 7a3 3 0 016 0"/><path d="M7 9h10l-1 9a3 3 0 01-3 2h-2a3 3 0 01-3-2z"/></svg>',
+    run:'<svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="14" cy="4" r="2"/><path d="M8 21l3-6 3 2v5M6 12l3-4 4 1 3 3 3 1"/></svg>',
+    strength:'<svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M6 7v10M18 7v10M3 10v4M21 10v4M6 12h12"/></svg>',
+    other:'<svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>'},
+  tool:{
+    band:'<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 12c0-4 4-6 8-6s8 2 8 6-4 6-8 6-8-2-8-6z"/></svg>',
+    roller:'<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><ellipse cx="5" cy="12" rx="2.5" ry="5"/><path d="M5 7h14M5 17h14"/><ellipse cx="19" cy="12" rx="2.5" ry="5"/></svg>',
+    ball:'<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="7"/><circle cx="10" cy="10" r="1" fill="currentColor"/><circle cx="14" cy="13" r="1" fill="currentColor"/></svg>',
+    mat:'<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M3 16l4-8h14l-4 8z"/></svg>',
+    none:'<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 13V5a1.5 1.5 0 013 0v6M11 10V4a1.5 1.5 0 013 0v6M14 10V5a1.5 1.5 0 013 0v8a7 7 0 01-7 7h-.5A5.5 5.5 0 014 14.5V12a1.5 1.5 0 013 0v2"/></svg>'}
+};
+
+/* ---------- 공통 조각 ---------- */
+const topbar=(title,{left='back',right=''}={})=>`<div class="top"><div style="width:44px">${left==='back'?`<button class="icon-btn" data-act="back" aria-label="뒤로">${I.back}</button>`:left==='close'?`<button class="icon-btn" data-act="assessExit" aria-label="평가 나가기">${I.close}</button>`:left}</div><h2>${title}</h2><div style="width:44px;display:flex;justify-content:flex-end">${right}</div></div>`;
+const navbar=()=>{const cur=ui.screen;const b=(k,l,ic)=>`<button data-act="tab" data-arg="${k}" ${cur===k?'aria-current="page"':''}>${ic}<span>${l}</span></button>`;return `<nav class="nav" aria-label="하단 메뉴">${b('home','홈',I.home)}${b('mobility','내 가동성',I.mob)}${b('records','운동 기록',I.log)}</nav>`;};
+const demoTag=()=>`<span class="tag line">데모 기록</span>`;
+const ruleTag=()=>`<span class="tag line">데모 평가 기준</span>`;
+function delta(cur,prev){if(cur==null||prev==null)return '';const d=cur-prev;if(d>0)return `<span class="tag up" aria-label="${d}점 상승">▲ ${d}</span>`;if(d<0)return `<span class="tag down" aria-label="${-d}점 하락">▼ ${-d}</span>`;return `<span class="tag line">변화 없음</span>`;}
+function ring(val,size=132,stroke=12,dark=false){const r=(size-stroke)/2,c=2*Math.PI*r,off=val==null?c:c*(1-val/100);return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" aria-hidden="true" style="transform:rotate(-90deg)"><circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="${dark?'#3A3832':'#F0EADD'}" stroke-width="${stroke}"/><circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="#9D876B" stroke-width="${stroke}" stroke-linecap="round" stroke-dasharray="${c.toFixed(2)}" stroke-dashoffset="${off.toFixed(2)}" style="transition:stroke-dashoffset .6s"/></svg>`;}
+function toolLabel(tools){return tools.includes('none')?'도구 없이':tools.map(t=>TOOLS[t]).join('·');}
+function moveToolTag(m){if(!m.tools.length)return '<span class="tag up">매트 없이 가능</span>';return m.tools.map(t=>`<span class="tag">${TOOLS[t]}</span>`).join(' ');}
+function moveTimeLabel(m){return m.sides?`좌우 각 ${m.work}초`:`${m.work}초`;}
+let animId=0;
+const animFig=(poses,label,cls='fig',w=200)=>{const id='a'+(++animId);ANIMS[id]=poses;return `<svg id="${id}" class="${cls}" data-anim="${id}" viewBox="0 0 200 200" role="img" aria-label="${label}" style="max-width:${w}px">${poses[0].k==='top'?svgTop(poses[0]):poses[0].k==='back'?svgBack(poses[0]):svgBody(poses[0])}</svg>`;};
+let ANIMS={};
+
+/* ---------- 화면: 첫 진입 ---------- */
+function vIntro(){
+  return `<div class="screen" style="display:flex;flex-direction:column;padding-bottom:28px">
+  <div class="top"><span class="logo">WOD</span><button class="link" data-act="openSub">구독 안내</button></div>
+  <div style="margin:12px -4px 8px">${animFig([P.kneel(14,{t:160,hN:[124,G],ex:{mat:1}}),P.kneel(16,{t:166,aN:[180,180],hN:null,hF:[124,G],ex:{mat:1}})],'스트레칭하는 사람 도식','fig',430)}</div>
+  <h1 style="font-size:32px">내 운동에 맞게,<br>내 몸에 맞게.</h1>
+  <p class="lead">가동성을 확인하고, 오늘의 운동에 필요한 스트레칭을 시작하세요.</p>
+  <div class="col" style="gap:10px;margin-bottom:24px">
+    ${[['10가지 동작으로 가동성 확인','부위별·종합 점수를 바로 볼 수 있어요'],['종목·도구·시간에 맞춘 루틴','평가 점수가 낮은 부위를 먼저 반영해요'],['영상 대신 도식과 타이머로 따라 하기','매달 재평가로 변화를 비교해요']].map((x,i)=>`<div class="row" style="align-items:flex-start"><span class="tag ink" style="width:24px;justify-content:center;padding:0">${i+1}</span><div><div class="b">${x[0]}</div><div class="small mut">${x[1]}</div></div></div>`).join('')}
+  </div>
+  <div class="col" style="gap:10px;margin-top:auto">
+    <button class="btn pri" data-act="startAssess">가동성 평가 시작</button>
+    <button class="btn sec" data-act="loadDemo">예시 결과로 체험하기</button>
+    <p class="xs mut" style="text-align:center;margin:4px 0 0">계정 없이 체험해요. 입력한 내용은 이 브라우저에만 저장돼요.</p>
+  </div></div>`;
+}
+
+/* ---------- 화면: 홈 ---------- */
+function vHome(){
+  const a=latestA(),sc=a?scoreAssessment(a):null,last=[...S.sessions].sort((x,y)=>new Date(y.date)-new Date(x.date));
+  const recentSport=S.prefs.sport||(last[0]&&last[0].sport);
+  let h=`<div class="screen"><div class="top"><span class="logo">WOD</span><button class="icon-btn" data-act="openSettings" aria-label="설정">${I.gear}</button></div>`;
+  h+=`<h1>오늘도 내 몸에 맞게<br>시작해 볼까요?</h1>`;
+  if(S.draft)h+=`<div class="notice" style="margin:12px 0"><div class="between"><span><b>진행 중인 평가</b><br><span class="mut">${Object.keys(S.draft.answers).length}/10 항목 입력</span></span><button class="btn pri sm" data-act="resumeAssess">이어서 평가하기</button></div></div>`;
+  if(!a){
+    h+=`<div class="card empty" style="margin-top:16px"><div style="max-width:220px;margin:0 auto">${animFig([testPose(TESTS[7],1),testPose(TESTS[7],4)],'상체 숙이기 도식','fig')}</div>
+      <p class="b" style="margin:16px 0 4px">아직 평가 기록이 없어요</p>
+      <p class="small mut" style="margin:0 0 16px">10가지 동작으로 가동성을 확인하면 점수가 낮은 부위를 반영한 루틴을 만들 수 있어요. 약 5분 걸려요.</p>
+      <button class="btn pri" data-act="startAssess">가동성 평가 시작</button>
+      <button class="link" data-act="loadDemo" style="margin-top:6px">예시 결과로 체험하기</button></div>`;
+  }else{
+    if(reassessDue())h+=reassessBanner();
+    h+=`<button class="card tap" data-act="tab" data-arg="mobility" style="display:block;margin-top:12px"><div class="row" style="gap:18px">
+      <div class="ring-wrap">${ring(sc.overall)}<div class="num">${sc.overall!=null?`<b>${sc.overall}</b><span class="xs mut">종합 점수</span>`:`<span class="small b" style="text-align:center">평가<br>진행 중</span>`}</div></div>
+      <div class="col" style="gap:6px;min-width:0"><span class="small mut">최근 평가일</span><span class="b">${fmtDate(a.date)}</span>
+      <div class="row" style="gap:6px;flex-wrap:wrap">${ruleTag()}${a.demo?demoTag():''}</div>
+      ${sc.overall==null?`<span class="xs mut">전체 평가를 마치면 종합 점수를 확인할 수 있어요</span>`:''}</div></div></button>`;
+    if(!reassessDue())h+=`<p class="small mut" style="margin:0 4px 12px">다음 재평가: ${fmtDate(addMonth(a.date))} · 한 달마다 변화를 비교해요</p>`;
+  }
+  h+=`<div class="card sub"><div class="between"><div><div class="small mut">최근 선택한 운동</div><div class="b" style="font-size:18px">${recentSport?SPORTS[recentSport]:'아직 선택하지 않았어요'}</div></div>${recentSport?`<span style="color:var(--accD)">${I.sport[recentSport]}</span>`:''}</div>
+    <button class="btn pri" style="margin-top:14px" data-act="startBuilder">오늘의 맞춤 루틴 만들기</button></div>`;
+  h+=`<div class="between"><p class="sec-title">최근 수행 기록</p>${last.length?'<button class="link" data-act="tab" data-arg="records">전체 보기</button>':''}</div>`;
+  if(!last.length)h+=`<div class="card empty"><p class="b" style="margin:0 0 4px">아직 수행 기록이 없어요</p><p class="small mut" style="margin:0">루틴을 끝내면 날짜·시간·완료 여부가 여기에 남아요.</p></div>`;
+  else h+=`<div class="card" style="padding:4px 20px">${last.slice(0,3).map(sessionRow).join('')}</div>`;
+  h+=`<button class="card sub tap" data-act="openSub" style="display:block"><div class="between"><div><div class="b">WOD 구독 · 월 9,900원</div><div class="small mut">데모에서는 무료로 체험할 수 있어요</div></div><span aria-hidden="true">›</span></div></button>`;
+  return h+`</div>`+navbar();
+}
+function reassessBanner(){return `<div class="notice" style="margin:12px 0"><p class="b" style="margin:0 0 4px">재평가할 때가 됐어요</p><p style="margin:0 0 12px">한 달 동안 움직임이 어떻게 달라졌는지 확인해 보세요.</p><button class="btn pri sm" data-act="startReassess">재평가 시작</button></div>`;}
+function sessionRow(s){
+  return `<button class="tap list-item" data-act="openSession" data-arg="${s.id}"><div style="flex:none;width:40px;height:40px;border-radius:12px;background:var(--sub);display:flex;align-items:center;justify-content:center;color:var(--accD)">${I.sport[s.sport].replace(/width="30" height="30"/,'width="22" height="22"')}</div>
+  <div style="flex:1;min-width:0"><div class="between"><span class="b">${SPORTS[s.sport]} ${s.purpose==='pre'?'전 준비':'후 정리'}</span><span class="tag ${s.status==='complete'?'ink':'line'}">${s.status==='complete'?'완료':'중도 종료'}</span></div>
+  <div class="small mut">${fmtDate(s.date,true)} · ${fmtDur(s.actualSec)} · ${s.doneMoves}/${s.total}동작${s.feel?' · '+s.feel:''}</div>
+  <div class="row" style="gap:6px;margin-top:4px">${s.demo?demoTag():''}${s.quick?'<span class="tag line">빠르게 체험</span>':''}</div></div></button>`;
+}
+
+/* ---------- 화면: 가동성 평가 ---------- */
+function vAssess(){
+  const d=S.draft,i=d.step,t=TESTS[i],v=d.answers[t.id],ang=d.angles[t.id];
+  let h=`<div class="screen">${topbar(d.isRe?'재평가':'가동성 평가',{left:'close',right:`<span class="small b">${i+1}/10</span>`})}
+  <div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="10" aria-valuenow="${i+1}" aria-label="평가 진행"><i style="width:${(i+1)*10}%"></i></div>
+  <div class="row" style="gap:6px;margin-top:18px;flex-wrap:wrap"><span class="tag">목표 부위 · ${rn(t.region)}</span>${t.side?`<span class="tag ink">${t.side}</span>`:''}<span class="tag line">데모 평가 기준</span></div>
+  <h1 style="font-size:24px">${t.name}</h1><p class="small mut" style="margin:0 0 12px">${t.target}</p>
+  <div class="fig-wrap">${animFig([testPose(t,1),testPose(t,4)],t.name+' 안내 도식','fig',430)}<span class="tag badge" style="background:#fff">데모 동작 안내</span></div>
+  <div class="card" style="margin-top:12px"><p class="b" style="margin:0 0 6px">시작 자세</p><p style="margin:0 0 14px">${t.setup}</p><p class="b" style="margin:0 0 8px">수행 방법</p>
+  <ol class="steps">${t.how.map((x,k)=>`<li><span class="n">${k+1}</span><span>${x}</span></li>`).join('')}</ol>
+  <p class="xs mut" style="margin:12px 0 0">통증이 있거나 수행이 불편하면 무리하지 말고 이번 항목을 건너뛰세요.</p></div>
+  <div class="between"><p class="sec-title">내 움직임과 가까운 범위</p>${t.angle?`<button class="btn soft sm" data-act="toggleAngle" aria-expanded="${ui.anglePanel}">${I.angle} 각도 입력</button>`:''}</div>`;
+  if(ui.anglePanel&&t.angle)h+=anglePanel(t);
+  h+=`<div class="opt-grid" role="group" aria-label="결과 선택">${t.levels.map((l,k)=>`<button class="opt" data-act="pickLevel" data-arg="${k+1}" aria-pressed="${v===k+1}"><span class="check">${I.check}</span>${svgPose(testPose(t,k+1),l).replace('<svg','<svg class="fig"')}<span class="t">범위 ${k+1} · ${l}</span><span class="d">${t.desc[k]}</span></button>`).join('')}</div>`;
+  h+=`<div class="card sub" style="margin-top:12px" aria-live="polite">${v==='skip'?`<b>이번 항목을 건너뛰었어요.</b><br><span class="small mut">점수에 넣지 않고 미평가로 표시해요.</span>`:typeof v==='number'?`<b>선택한 결과: 범위 ${v} · ${t.levels[v-1]}</b><br><span class="small mut">데모 기준 ${LEVEL_SCORE[v]}점${ang!=null?` · 수동 입력 각도 ${ang}°`:''}</span>`:`<span class="small mut">예시 4개 중 하나를 골라 주세요.</span>`}</div>`;
+  h+=`<button class="link" data-act="skipTest" style="display:block;margin:8px auto 0">이번 항목 건너뛰기</button></div>`;
+  h+=`<div class="dock"><button class="btn sec" data-act="assessPrev" ${i===0?'disabled style="opacity:.4"':''}>이전 단계</button><button class="btn pri" data-act="assessNext" ${v==null?'disabled':''}>${i===9?'결과 보기':'다음 단계'}</button></div>`;
+  return h;
+}
+function anglePanel(t){
+  const a=ui.angleVal??Math.round((t.angle.min+t.angle.max)/2),lvl=angleToLevel(t,a);
+  return `<div class="card" style="border:2px solid var(--acc)"><div class="between"><span class="b">각도 입력</span><span class="tag">수동 입력 예시</span></div>
+  <div class="row" style="gap:12px;margin-top:8px"><div style="flex:1" id="angFig">${svgPose(t.pose(a),'입력한 각도의 자세').replace('<svg','<svg class="fig"')}</div>
+  <div style="flex:1;text-align:center" id="angGauge">${gauge(a,t.angle)}</div></div>
+  <label class="small b" for="angRange" style="display:block;margin-top:10px">각도 <span id="angNum">${a}</span>° → <span id="angLvl">범위 ${lvl}</span></label>
+  <input id="angRange" type="range" min="${t.angle.min}" max="${t.angle.max}" step="1" value="${a}" data-input="angle">
+  <p class="xs mut" style="margin:4px 0 12px">휴대폰 센서나 카메라를 쓰지 않아요. 직접 잰 각도를 슬라이더로 옮겨 적는 예시예요.</p>
+  <button class="btn pri sm" data-act="applyAngle" style="width:100%">이 각도로 결과 선택</button></div>`;
+}
+function gauge(a,cfg){const p=(a-cfg.min)/(cfg.max-cfg.min),ang=Math.PI*(1-p),x=60+Math.cos(ang)*46,y=64-Math.sin(ang)*46;
+  return `<svg viewBox="0 0 120 80" role="img" aria-label="${a}도" style="width:100%"><path d="M14 64 A46 46 0 0 1 106 64" fill="none" stroke="#F0EADD" stroke-width="10" stroke-linecap="round"/><path d="M14 64 A46 46 0 0 1 ${x.toFixed(1)} ${y.toFixed(1)}" fill="none" stroke="#9D876B" stroke-width="10" stroke-linecap="round"/><line x1="60" y1="64" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}" stroke="#25241F" stroke-width="3" stroke-linecap="round"/><circle cx="60" cy="64" r="4" fill="#25241F"/></svg><div style="font-size:30px;font-weight:900;line-height:1">${a}°</div><div class="xs mut">${cfg.min}°~${cfg.max}°</div>`;}
+
+/* ---------- 화면: 내 가동성 ---------- */
+function vMobility(){
+  const a=latestA(),p=prevA();
+  let h=`<div class="screen"><div class="top"><span class="logo">WOD</span><button class="icon-btn" data-act="openSettings" aria-label="설정">${I.gear}</button></div><h1>내 가동성</h1>`;
+  if(!a){return h+`<div class="card empty"><p class="b" style="margin:0 0 4px">평가 결과가 아직 없어요</p><p class="small mut" style="margin:0 0 16px">10가지 동작을 마치면 부위별 점수와 종합 점수가 여기에 표시돼요.</p><button class="btn pri" data-act="startAssess">가동성 평가 시작</button><button class="link" data-act="loadDemo">예시 결과로 체험하기</button></div></div>`+navbar();}
+  const sc=scoreAssessment(a),ps=p?scoreAssessment(p):null;
+  if(reassessDue())h+=reassessBanner();
+  h+=`<div class="card"><div class="row" style="gap:6px;flex-wrap:wrap;margin-bottom:12px">${ruleTag()}${a.demo?demoTag():''}</div><div class="row" style="gap:18px">
+    <div class="ring-wrap">${ring(sc.overall)}<div class="num">${sc.overall!=null?`<b>${sc.overall}</b><span class="xs mut">/ 100</span>`:`<span class="small b">–</span>`}</div></div>
+    <div class="col" style="gap:4px"><span class="small mut">종합 점수</span><span class="b">${fmtDate(a.date)}</span>
+    ${sc.overall==null?'':ps&&ps.overall!=null?`<span class="small mut">지난 평가 대비</span><span>${delta(sc.overall,ps.overall)}</span>`:`<span class="xs mut">다음 평가부터 변화를 비교할 수 있어요</span>`}</div></div>
+    ${sc.overall==null?`<div class="notice" style="margin-top:14px">${sc.answered?'전체 평가를 마치면 종합 점수를 확인할 수 있어요.':'평가된 항목이 없어요. 전체 평가를 마치면 종합 점수를 확인할 수 있어요.'}<button class="btn pri sm" style="margin-top:10px;width:100%" data-act="continueAssess" data-arg="${a.id}">이어서 평가하기</button></div>`:''}</div>`;
+  h+=`<p class="sec-title">부위별 점수</p><div class="card" style="padding:10px 16px">`;
+  const low=recommend({sport:'run',purpose:'pre',tools:['none'],minutes:5},sc.regions).low;
+  REGION_KEYS.forEach(r=>{const v=sc.regions[r],pv=ps?ps.regions[r]:null;
+    h+=`<div class="bar-row"><span class="small b">${rn(r)}</span><div class="bar" aria-hidden="true"><i class="${low.includes(r)?'low':''}" style="width:${v??0}%"></i></div><span class="b" style="text-align:right">${v??'<span class="xs mut">미평가</span>'}</span></div>
+    ${v!=null&&ps?`<div style="margin:-4px 0 6px 106px">${pv!=null?delta(v,pv):'<span class="xs mut">지난 평가에서 미평가</span>'}</div>`:''}`;});
+  h+=`</div>`;
+  if(!ps)h+=`<p class="small mut" style="margin:0 4px 12px">다음 평가부터 변화를 비교할 수 있어요.</p>`;
+  h+=`<div class="card sub"><p class="b" style="margin:0 0 6px">이번 루틴에서 우선 반영할 부위</p>${low.length?`<div class="row" style="gap:6px;flex-wrap:wrap">${low.map(r=>`<span class="tag ink">${rn(r)} ${sc.regions[r]}점</span>`).join('')}</div><p class="small mut" style="margin:8px 0 0">75점 미만인 부위 중 점수가 낮은 2곳을 루틴에 더 반영해요. (기타 운동은 최대 3곳)</p>`:`<p class="small mut" style="margin:0">75점 미만인 부위가 없어 운동 종목 중심으로 구성해요.</p>`}</div>`;
+  h+=`<p class="sec-title">월별 점수 변화</p><div class="card">${trendChart()}</div>`;
+  h+=`<p class="sec-title">평가 기록</p><div class="card" style="padding:4px 20px">${sortedA().reverse().map(x=>{const s=scoreAssessment(x);return `<button class="tap list-item" data-act="openAssessment" data-arg="${x.id}"><div style="flex:1"><div class="between"><span class="b">${fmtDate(x.date)}</span><span class="b">${s.overall!=null?s.overall+'점':'<span class="small mut">종합 점수 없음</span>'}</span></div><div class="row small mut" style="gap:6px;margin-top:2px">${s.answered}/10 항목 평가 ${x.demo?demoTag():''}</div></div><span aria-hidden="true" class="mut">›</span></button>`;}).join('')}</div>`;
+  h+=`<div class="col" style="gap:10px;margin-top:16px"><button class="btn pri" data-act="startBuilder">이 결과로 루틴 만들기</button><button class="btn sec" data-act="startReassess">다시 평가하기</button>
+    ${!reassessDue()?`<button class="link" data-act="startReassess" data-arg="demo">재평가 체험 (한 달을 기다리지 않고 바로)</button>`:''}</div>`;
+  return h+`</div>`+navbar();
+}
+function trendChart(){
+  const pts=sortedA().map(a=>({a,s:scoreAssessment(a).overall})).filter(x=>x.s!=null);
+  if(pts.length<2)return `<p class="small mut" style="margin:0">${pts.length?'평가가 한 번뿐이에요. 다음 평가부터 변화를 비교할 수 있어요.':'종합 점수가 있는 평가가 아직 없어요.'}</p>`;
+  const W=320,H=150,l=30,r=12,t=16,b=28,n=pts.length,xs=i=>l+(n===1?0:(W-l-r)*i/(n-1)),ys=v=>t+(H-t-b)*(1-v/100);
+  let s=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="평가별 종합 점수: ${pts.map(p=>fmtDate(p.a.date,true)+' '+p.s+'점').join(', ')}" style="width:100%;height:auto">`;
+  [0,50,100].forEach(v=>s+=`<line x1="${l}" x2="${W-r}" y1="${ys(v)}" y2="${ys(v)}" stroke="#E5DFD3"/><text x="${l-6}" y="${ys(v)+4}" font-size="10" text-anchor="end" fill="#77736B">${v}</text>`);
+  s+=`<polyline points="${pts.map((p,i)=>xs(i)+','+ys(p.s)).join(' ')}" fill="none" stroke="#9D876B" stroke-width="3" stroke-linejoin="round"/>`;
+  pts.forEach((p,i)=>{s+=`<circle cx="${xs(i)}" cy="${ys(p.s)}" r="5" fill="${i===n-1?'#25241F':'#fff'}" stroke="#25241F" stroke-width="2"/><text x="${xs(i)}" y="${ys(p.s)-10}" font-size="12" font-weight="700" text-anchor="middle" fill="#25241F">${p.s}</text><text x="${xs(i)}" y="${H-8}" font-size="10" text-anchor="middle" fill="#77736B">${new Date(p.a.date).getMonth()+1}월 ${new Date(p.a.date).getDate()}일</text>`;});
+  return s+`</svg>${pts.some(p=>p.a.demo)?'<p class="xs mut" style="margin:6px 0 0">데모 기록이 포함돼 있어요.</p>':''}`;
+}
+
+/* ---------- 화면: 루틴 만들기 (종목 → 목적 → 도구 → 시간) ---------- */
+function stepHead(n,title,sub){return `${topbar(`${n}/4`)}<div class="progress" aria-hidden="true"><i style="width:${n*25}%"></i></div><h1 style="margin-top:18px">${title}</h1><p class="lead">${sub}</p>`;}
+function vSport(){const v=S.prefs.sport;
+  return `<div class="screen">${stepHead(1,'어떤 운동을 하나요?','종목에 많이 쓰이는 부위를 루틴에 반영해요.')}
+  <div class="sport-grid" role="group" aria-label="운동 종목">${Object.keys(SPORTS).map(k=>`<button class="opt" data-act="pickSport" data-arg="${k}" aria-pressed="${v===k}"><span class="check">${I.check}</span><span style="color:var(--accD)">${I.sport[k]}</span><span class="t" style="font-size:17px">${SPORTS[k]}</span><span class="d">${k==='other'?'점수가 낮은 부위 중심':SPORT_REGIONS[k].map(rn).join('·')}</span></button>`).join('')}</div></div>`;}
+function vPurpose(){const v=S.prefs.purpose,sp=SPORTS[S.prefs.sport];
+  return `<div class="screen">${stepHead(2,'언제 하는 루틴인가요?','목적에 따라 동작 종류가 달라져요.')}
+  <div class="col" style="gap:10px" role="group" aria-label="루틴 목적">${['pre','post'].map(k=>`<button class="opt" data-act="pickPurpose" data-arg="${k}" aria-pressed="${v===k}" style="padding:18px"><span class="check">${I.check}</span><span class="t" style="font-size:18px">${PURPOSES[k]}</span><span class="d">${k==='pre'?`${sp} 전 · 움직이며 관절 범위를 넓히는 동작 위주`:`${sp} 후 · 머물며 늘리고 이완하는 동작 위주`}</span></button>`).join('')}</div></div>
+  <div class="dock"><button class="btn pri" data-act="stepNext" data-arg="tools" ${v?'':'disabled'}>다음</button></div>`;}
+function vTools(){const v=S.prefs.tools;
+  return `<div class="screen">${stepHead(3,'지금 쓸 수 있는 도구는?','여러 개 고를 수 있어요. 고른 도구로 할 수 있는 동작만 추천해요.')}
+  <div class="opt-grid" role="group" aria-label="도구 선택">${Object.keys(TOOLS).map(k=>`<button class="opt" data-act="pickTool" data-arg="${k}" aria-pressed="${v.includes(k)}" style="padding:16px;min-height:96px${k==='none'?';grid-column:1/-1':''}"><span class="check">${I.check}</span><span style="color:var(--accD)">${I.tool[k]}</span><span class="t">${TOOLS[k]}</span>${k==='none'?'<span class="d">선 채로 하거나 벽을 짚는 맨몸 동작만 추천해요</span>':k==='mat'?'<span class="d">바닥에 눕거나 앉는 동작이 추가돼요</span>':''}</button>`).join('')}</div></div>
+  <div class="dock"><button class="btn pri" data-act="stepNext" data-arg="time" ${v.length?'':'disabled'}>다음</button></div>`;}
+function vTime(){const v=S.prefs.minutes,sc=latestScores();
+  return `<div class="screen">${stepHead(4,'얼마나 할까요?','준비·좌우 전환 시간을 포함한 전체 시간이에요.')}
+  <div class="opt-grid" role="group" aria-label="시간 선택">${MINUTES.map(m=>{const r=recommend(Object.assign({},S.prefs,{minutes:m}),sc);return `<button class="opt" data-act="pickTime" data-arg="${m}" aria-pressed="${v===m}" style="padding:18px"><span class="check">${I.check}</span><span class="t" style="font-size:22px">${m}분</span><span class="d">${r.moves.length?`${r.moves.length}개 동작 · 실제 ${fmtDur(r.total)}`:'조건에 맞는 동작이 없어요'}</span></button>`;}).join('')}</div></div>
+  <div class="dock"><button class="btn pri" data-act="makeRoutine" ${v?'':'disabled'}>루틴 만들기</button></div>`;}
+
+/* ---------- 화면: 루틴 확인 ---------- */
+function vRoutine(){
+  const c=S.prefs,r=currentRoutine();
+  if(!r)return `<div class="screen">${topbar('맞춤 루틴')}<p>조건을 먼저 골라 주세요.</p><button class="btn pri" data-act="startBuilder">조건 고르기</button></div>`;
+  let h=`<div class="screen">${topbar('맞춤 루틴')}<span class="tag">${routineSub(c)}</span><h1>${routineTitle(c)}</h1>
+  <div class="card"><dl class="kv"><dt>운동 종목</dt><dd>${SPORTS[c.sport]}</dd><dt>목적</dt><dd>${PURPOSES[c.purpose]}</dd><dt>총 소요 시간</dt><dd>${fmtDur(r.total)} <span class="mut small">(선택 ${c.minutes}분)</span></dd><dt>사용 도구</dt><dd>${toolLabel(c.tools)}</dd><dt>우선 반영 부위</dt><dd>${r.priority.length?joinR(r.priority):c.sport==='other'?'고르게 구성':joinR(r.sportRegs)}</dd></dl></div>
+  <div class="card sub"><p class="b" style="margin:0 0 4px">추천 이유</p><p style="margin:0">${r.reason}</p><p class="xs mut" style="margin:8px 0 0">데모용 임시 추천 규칙이에요. 검증된 운동 효과를 뜻하지 않아요.</p></div>`;
+  if(!r.moves.length)h+=`<div class="notice">고른 도구와 목적에 맞는 동작이 없어요. 도구를 더 고르거나 목적을 바꿔 보세요.</div>`;
+  else if(r.short)h+=`<div class="notice">조건에 맞는 동작이 부족해 실제 구성 시간은 <b>${fmtDur(r.total)}</b>이에요. 같은 동작을 반복해 채우지 않았어요. 도구를 더 고르거나 시간을 줄여 보세요.</div>`;
+  h+=`<p class="sec-title">동작 ${r.moves.length}개</p><div class="card" style="padding:4px 16px">${r.moves.map((m,i)=>`<div class="list-item"><div style="flex:none;width:64px">${svgPose(m.poses[1],m.name).replace('<svg','<svg class="fig"')}</div><div style="flex:1;min-width:0"><div class="between" style="align-items:flex-start"><span class="b">${i+1}. ${m.name}</span><span class="small b" style="white-space:nowrap">${fmtDur(moveSec(m))}</span></div><div class="row" style="gap:6px;flex-wrap:wrap;margin:4px 0"><span class="tag">${rn(m.regions[0])}</span>${moveToolTag(m)}<span class="tag line">${moveTimeLabel(m)}</span></div><div class="xs mut">${r.why(m)}</div></div></div>`).join('')}</div>
+  <div class="card between"><div><div class="b">빠르게 체험</div><div class="xs mut">동작 구성은 그대로, 동작마다 ${Q_WORK}초만 진행해요</div></div><button class="switch" role="switch" aria-checked="${S.prefs.quick}" aria-label="빠르게 체험" data-act="toggleQuick"></button></div>
+  </div><div class="dock"><button class="btn sec" data-act="editConditions" style="flex:0 0 38%">조건 수정</button><button class="btn pri" data-act="startPlayer" ${r.moves.length?'':'disabled'}>운동 시작</button></div>`;
+  return h;
+}
+
+/* ---------- 타이머 엔진 (실제 시각 기준 → 백그라운드에서도 정확) ---------- */
+let tickId=null,audioCtx=null;
+function buildSegs(ids,quick){const segs=[];ids.forEach((id,mi)=>{const m=MOVE[id];segs.push({m:mi,k:'prep',d:quick?Q_PREP:PREP});const w=quick?Q_WORK:m.work;
+  if(m.sides){segs.push({m:mi,k:'work',side:'왼쪽',d:w});segs.push({m:mi,k:'switch',d:quick?Q_SWITCH:SWITCH});segs.push({m:mi,k:'work',side:'오른쪽',d:w,last:true});}else segs.push({m:mi,k:'work',side:null,d:w,last:true});});return segs;}
+function startPlayer(){
+  const c=S.prefs,r=currentRoutine();if(!r||!r.moves.length)return;
+  const ids=r.moves.map(m=>m.id),segs=buildSegs(ids,c.quick);
+  S.player={sid:uid(),cond:{sport:c.sport,purpose:c.purpose,tools:[...c.tools],minutes:c.minutes,quick:!!c.quick},ids,planned:r.total,segs,i:0,remain:segs[0].d*1000,endAt:null,running:false,activeMs:0,lastTick:null,done:ids.map(()=>false),started:new Date().toISOString(),beeped:-1};
+  save();ensureAudio();go('player');plStart();
+}
+function ensureAudio(){try{if(!audioCtx){const AC=window.AudioContext||window.webkitAudioContext;if(AC)audioCtx=new AC();}if(audioCtx&&audioCtx.state==='suspended')audioCtx.resume();}catch(e){audioCtx=null;}}
+function beep(freq=880,dur=0.12){if(!S.prefs.sound||!audioCtx)return;try{const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.frequency.value=freq;g.gain.setValueAtTime(0.15,audioCtx.currentTime);g.gain.exponentialRampToValueAtTime(0.001,audioCtx.currentTime+dur);o.connect(g).connect(audioCtx.destination);o.start();o.stop(audioCtx.currentTime+dur);}catch(e){}}
+function ensureTick(){if(tickId)clearInterval(tickId);tickId=setInterval(onTick,200);} // 중복 실행 방지: 항상 하나만
+function stopTick(){if(tickId){clearInterval(tickId);tickId=null;}}
+function plStart(){const p=S.player;if(!p||p.running)return;const now=Date.now();p.running=true;p.endAt=now+p.remain;p.lastTick=now;save();ensureTick();render();}
+function plPause(){const p=S.player;if(!p||!p.running)return;sync(Date.now());if(!S.player)return;p.remain=Math.max(0,p.endAt-Date.now());p.running=false;p.endAt=null;save();render();}
+function sync(now){
+  const p=S.player;if(!p||!p.running)return false;
+  p.activeMs+=Math.max(0,now-p.lastTick);p.lastTick=now;
+  let changed=false;
+  while(p.running&&now>=p.endAt){
+    const seg=p.segs[p.i];if(seg.k==='work'&&seg.last)p.done[seg.m]=true;
+    p.i++;changed=true;
+    if(p.i>=p.segs.length){finishPlayer('complete');return true;}
+    p.endAt+=p.segs[p.i].d*1000;p.remain=p.endAt-now;
+  }
+  if(changed){const k=p.segs[p.i].k;beep(k==='work'?1046:660,0.18);flashTimer();}
+  return changed;
+}
+function onTick(){
+  const p=S.player;if(!p){stopTick();return;}
+  if(!p.running)return;
+  const now=Date.now(),changed=sync(now);if(!S.player)return;
+  const left=(p.endAt-now)/1000,seg=p.segs[p.i],sec=Math.ceil(left);
+  if(seg.k==='work'&&sec<=3&&sec>=1&&p.beeped!==p.i*10+sec){p.beeped=p.i*10+sec;beep(880,0.08);}
+  if(changed&&ui.screen==='player')render();else updateTimerDom();
+  if(Math.random()<0.25)save();
+}
+function plJump(mi){
+  const p=S.player;if(!p)return;const now=Date.now();if(p.running)sync(now);if(!S.player)return;
+  mi=clamp(mi,0,p.ids.length-1);const idx=p.segs.findIndex(s=>s.m===mi);p.i=idx;p.remain=p.segs[idx].d*1000;if(p.running){p.endAt=now+p.remain;p.lastTick=now;}save();render();
+}
+function finishPlayer(status){
+  const p=S.player;if(!p)return;stopTick();
+  if(p.running){const now=Date.now();p.activeMs+=Math.max(0,now-p.lastTick);}
+  const doneIdx=p.done.map((d,i)=>d?i:-1).filter(i=>i>=0);
+  const actual=Math.round(p.activeMs/1000);
+  if(status==='partial'&&actual<3&&!doneIdx.length){S.player=null;save();ui.stack=[];ui.screen='routine';render();toast('수행한 시간이 없어 기록하지 않았어요.');return;}
+  const rec={id:p.sid,date:p.started,ended:new Date().toISOString(),sport:p.cond.sport,purpose:p.cond.purpose,tools:p.cond.tools,minutes:p.cond.minutes,quick:p.cond.quick,moves:p.ids,total:p.ids.length,doneMoves:doneIdx.length,plannedSec:p.planned,actualSec:actual,status,feel:null,regions:[...new Set(doneIdx.map(i=>MOVE[p.ids[i]].regions[0]))],demo:false};
+  const at=S.sessions.findIndex(s=>s.id===rec.id);if(at>=0)S.sessions[at]=Object.assign(S.sessions[at],rec);else S.sessions.push(rec); // 같은 id → 중복 저장 없음
+  S.player=null;save();beep(1318,0.35);ui.stack=[];ui.doneId=rec.id;ui.screen='done';render();window.scrollTo(0,0);
+}
+function flashTimer(){const el=$('#plTimerBox');if(el){el.classList.remove('flash');void el.offsetWidth;el.classList.add('flash');}}
+function plView(){
+  const p=S.player,now=Date.now();
+  const left=p.running?(p.endAt-now)/1000:p.remain/1000;
+  const seg=p.segs[p.i],m=MOVE[p.ids[seg.m]];
+  const totalMs=p.segs.reduce((s,x)=>s+x.d,0)*1000,doneMs=p.segs.slice(0,p.i).reduce((s,x)=>s+x.d,0)*1000+(seg.d*1000-left*1000);
+  const nextSeg=p.segs.slice(p.i+1).find(s=>s.m!==seg.m);
+  return {left,seg,m,pct:clamp(doneMs/totalMs*100,0,100),next:nextSeg?MOVE[p.ids[nextSeg.m]]:null};
+}
+function updateTimerDom(){if(ui.screen!=='player'||!S.player)return;const v=plView(),t=$('#plTime'),b=$('#plBar');if(t){t.textContent=mmss(v.left);t.classList.toggle('warn',v.seg.k==='work'&&v.left<=3&&S.player.running);}if(b)b.style.width=v.pct.toFixed(1)+'%';}
+function vPlayer(){
+  const p=S.player;if(!p)return vHome();
+  const v=plView(),m=v.m,seg=v.seg;
+  const status=seg.k==='prep'?'준비하세요':seg.k==='switch'?'반대쪽으로 바꿔요':(seg.side?seg.side+' 수행 중':'수행 중');
+  const media=m.video?`<video class="pl-fig" src="${m.video}" autoplay muted loop playsinline style="width:100%"></video>`:animFig(m.poses,m.name+' 동작 도식','pl-fig',430);
+  return `<div class="player"><div class="top"><button class="icon-btn" data-act="plExit" aria-label="운동 종료">${I.close}</button><h2>${seg.m+1} / ${p.ids.length} 동작</h2><button class="icon-btn" data-act="toggleSound" aria-label="${S.prefs.sound?'소리 끄기':'소리 켜기'}">${S.prefs.sound?I.sound:I.mute}</button></div>
+  <div class="pl-prog" role="progressbar" aria-label="전체 루틴 진행률"><i id="plBar" style="width:${v.pct.toFixed(1)}%"></i></div>
+  ${p.cond.quick?'<div style="text-align:center;margin-top:10px"><span class="tag" style="background:#E9D9BF">단축 체험 중 · 실제 시간과 달라요</span></div>':''}
+  <div style="position:relative;margin-top:10px">${media}<span class="tag" style="position:absolute;left:10px;top:10px;background:#fff">데모 동작 안내</span>${seg.k!=='work'?`<span class="tag ink" style="position:absolute;right:10px;top:10px">${status}</span>`:''}</div>
+  <div style="text-align:center;margin-top:14px"><div class="row" style="gap:6px;justify-content:center;flex-wrap:wrap"><span class="tag" style="background:#3A3832;color:#E9D9BF">${m.regions.map(rn).join('·')}</span>${seg.side?`<span class="tag" style="background:#E9D9BF;color:#25241F">${seg.side}</span>`:m.sides?'<span class="tag" style="background:#3A3832;color:#fff">좌우 번갈아</span>':''}</div>
+  <h1 style="font-size:24px;margin:8px 0 4px">${m.name}</h1><p style="margin:0;color:#D9D3C7;font-size:15px">${m.cue}</p>
+  <p class="xs tips" style="margin:6px 0 0;color:#B9B2A4">${m.tips.join(' · ')}</p></div>
+  <div style="margin-top:auto;padding-top:10px"><div id="plTimerBox" style="border-radius:20px;padding:4px 0"><div class="small" style="text-align:center;color:#B9B2A4;margin-bottom:6px">${status}</div><div id="plTime" class="timer" aria-live="off">${mmss(v.left)}</div></div>
+  <p class="small" style="text-align:center;color:#B9B2A4;margin:10px 0 0">${v.next?'다음 동작 · '+v.next.name:'마지막 동작이에요'}</p>
+  <div class="ctrl"><button class="sm" data-act="plPrev" aria-label="이전 동작">${I.prev}</button><button class="lg" data-act="plToggle" aria-label="${p.running?'일시정지':'시작'}">${p.running?I.pause:I.play}</button><button class="sm" data-act="plNext" aria-label="다음 동작">${I.next}</button></div>
+  <button class="link exit-link" data-act="plExit" style="margin:10px auto 0;color:#E9D9BF">운동 종료</button></div></div>`;
+}
+
+/* ---------- 화면: 완료 ---------- */
+function vDone(){
+  const s=S.sessions.find(x=>x.id===ui.doneId);if(!s)return vHome();
+  const ok=s.status==='complete';
+  return `<div class="screen" style="padding-top:40px"><div style="width:84px;height:84px;border-radius:999px;background:var(--sub);display:flex;align-items:center;justify-content:center;margin:0 auto;color:var(--accD)"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ok?'<path d="M5 12.5l4.5 4.5L19 7.5"/>':'<path d="M8 12h8"/>'}</svg></div>
+  <h1 style="text-align:center;margin-top:16px">${ok?'오늘의 스트레칭을 완료했어요.':'중간에 종료했어요.'}</h1><p class="lead" style="text-align:center">${ok?'꾸준히 할수록 다음 평가에서 비교하기 좋아요.':'수행한 만큼만 중도 종료 기록으로 저장했어요.'}</p>
+  <div class="card"><dl class="kv"><dt>운동 종목</dt><dd>${SPORTS[s.sport]} · ${s.purpose==='pre'?'운동 전':'운동 후'}</dd><dt>완료한 동작</dt><dd>${s.doneMoves} / ${s.total}개</dd><dt>실제 수행 시간</dt><dd>${fmtDur(s.actualSec)}${s.quick?' <span class="tag line">빠르게 체험</span>':''}</dd><dt>수행 날짜</dt><dd>${fmtDate(s.date)}</dd><dt>관리한 부위</dt><dd>${s.regions.length?joinR(s.regions):'없음'}</dd></dl></div>
+  <p class="sec-title">오늘 루틴은 어땠나요?</p><div class="feel" role="group" aria-label="체감 기록">${['따라 하기 쉬웠어요','적당했어요','어려웠어요'].map(f=>`<button class="opt" data-act="pickFeel" data-arg="${f}" aria-pressed="${s.feel===f}"><span class="t small">${f}</span></button>`).join('')}</div>
+  <p class="xs mut" style="text-align:center;margin:10px 0 0">기록은 한 번만 저장돼요. 체감은 언제든 바꿀 수 있어요.</p></div>
+  <div class="dock"><button class="btn sec" data-act="tab" data-arg="records">운동 기록 보기</button><button class="btn pri" data-act="tab" data-arg="home">홈으로</button></div>`;
+}
+
+/* ---------- 화면: 운동 기록 ---------- */
+function vRecords(){
+  const list=[...S.sessions].sort((a,b)=>new Date(b.date)-new Date(a.date));
+  const week=list.filter(s=>Date.now()-new Date(s.date).getTime()<=7*864e5);
+  const totalSec=list.reduce((x,s)=>x+s.actualSec,0);
+  let h=`<div class="screen"><div class="top"><span class="logo">WOD</span><button class="icon-btn" data-act="openSettings" aria-label="설정">${I.gear}</button></div><h1>운동 기록</h1>
+  <div class="opt-grid" style="margin-bottom:12px"><div class="card" style="margin:0"><div class="small mut">최근 7일 수행</div><div style="font-size:28px;font-weight:900">${week.length}<span class="small"> 회</span></div></div><div class="card" style="margin:0"><div class="small mut">누적 수행 시간</div><div style="font-size:28px;font-weight:900">${Math.floor(totalSec/60)}<span class="small"> 분</span> ${totalSec%60?`<span class="small">${totalSec%60}초</span>`:''}</div></div></div>`;
+  if(list.some(s=>s.demo))h+=`<p class="xs mut" style="margin:0 4px 8px">‘데모 기록’ 표시는 예시 사용자의 기록이에요. 요약에도 포함돼요.</p>`;
+  if(!list.length)return h+`<div class="card empty"><p class="b" style="margin:0 0 4px">아직 수행 기록이 없어요</p><p class="small mut" style="margin:0 0 16px">루틴을 시작하면 완료·중도 종료 여부와 실제 시간이 저장돼요.</p><button class="btn pri" data-act="startBuilder">루틴 만들기</button></div></div>`+navbar();
+  const groups={};list.forEach(s=>{const k=fmtDate(s.date);(groups[k]=groups[k]||[]).push(s);});
+  Object.keys(groups).forEach(k=>{h+=`<p class="sec-title small" style="font-size:15px">${k}</p><div class="card" style="padding:4px 20px">${groups[k].map(sessionRow).join('')}</div>`;});
+  return h+`</div>`+navbar();
+}
+
+/* ---------- 구독 안내 ---------- */
+function vSub(){
+  return `<div class="screen">${topbar('WOD 구독')}<span class="logo">WOD</span><h1 style="margin-top:16px">기본 평가는 무료,<br>맞춤 관리는 구독으로</h1>
+  <div class="card"><div class="between"><span class="b">가동성 평가</span><span class="tag up">무료</span></div><p class="small mut" style="margin:6px 0 0">10가지 동작 평가와 부위별·종합 점수</p></div>
+  <div class="card" style="border:2px solid var(--acc)"><div class="between"><span class="b" style="font-size:18px">WOD 구독</span><span style="font-size:24px;font-weight:900">월 9,900원</span></div>
+  <ul class="steps" style="margin-top:14px">${['운동 종목별 맞춤 루틴','영상·타이머 안내','월별 가동성 재평가와 변화 관리'].map(x=>`<li><span class="n" style="background:var(--acc)">${I.check}</span><span>${x}</span></li>`).join('')}</ul></div>
+  <div class="notice"><b>데모에서는 무료로 체험할 수 있어요.</b><br>결제 정보를 받지 않으며 실제 결제는 일어나지 않아요.</div></div>
+  <div class="dock"><button class="btn pri" data-act="back">데모 계속 체험하기</button></div>`;
+}
+
+/* ---------- 시트·모달 ---------- */
+function sheetSettings(){return `<p class="b" style="font-size:19px;margin:0 0 12px">설정</p>
+  <div class="card between"><div><div class="b">타이머 알림음</div><div class="xs mut">동작 종료 3초 전과 전환 때 짧은 소리</div></div><button class="switch" role="switch" aria-checked="${S.prefs.sound}" aria-label="타이머 알림음" data-act="toggleSound"></button></div>
+  <button class="card tap between" data-act="openSub" style="display:flex"><span class="b">구독 안내</span><span aria-hidden="true">›</span></button>
+  <button class="card tap between" data-act="loadDemo" style="display:flex"><span><span class="b">예시 사용자 데이터 불러오기</span><br><span class="xs mut">과거 평가 3회와 수행 기록 4건 (데모 기록)</span></span><span aria-hidden="true">›</span></button>
+  <button class="btn sec" data-act="askReset" style="color:var(--down);margin-top:8px">데이터 초기화</button>
+  ${S.storageOk?'':'<p class="xs mut">이 브라우저에서 저장소를 쓸 수 없어 새로고침하면 기록이 사라져요.</p>'}`;}
+function sheetAssessment(id){
+  const a=S.assessments.find(x=>x.id===id);if(!a)return '';const s=scoreAssessment(a);
+  return `<div class="between"><p class="b" style="font-size:19px;margin:0">${fmtDate(a.date)} 평가</p>${a.demo?demoTag():''}</div><p class="small mut">종합 ${s.overall!=null?s.overall+'점':'점수 없음(미평가 부위 있음)'} · ${ruleTag()}</p>
+  <div class="card" style="padding:4px 16px">${TESTS.map(t=>{const v=a.answers[t.id];return `<div class="list-item"><div style="flex:1"><div class="small b">${t.name}</div><div class="xs mut">${rn(t.region)}${a.angles&&a.angles[t.id]!=null?` · 수동 입력 ${a.angles[t.id]}°`:''}</div></div><div class="small b" style="text-align:right">${typeof v==='number'?`범위 ${v}<br><span class="mut xs">${LEVEL_SCORE[v]}점</span>`:'<span class="mut">미평가</span>'}</div></div>`;}).join('')}</div>
+  ${s.answered<10?`<button class="btn pri" data-act="continueAssess" data-arg="${a.id}">이어서 평가하기</button>`:''}`;
+}
+function sheetSession(id){
+  const s=S.sessions.find(x=>x.id===id);if(!s)return '';
+  return `<div class="between"><p class="b" style="font-size:19px;margin:0">${routineTitle(s)}</p></div><div class="row" style="gap:6px;margin:8px 0 12px;flex-wrap:wrap"><span class="tag ${s.status==='complete'?'ink':'line'}">${s.status==='complete'?'완료':'중도 종료'}</span>${s.demo?demoTag():''}${s.quick?'<span class="tag line">빠르게 체험</span>':''}</div>
+  <div class="card"><dl class="kv"><dt>수행 날짜</dt><dd>${fmtDate(s.date)}</dd><dt>목적</dt><dd>${PURPOSES[s.purpose]}</dd><dt>선택한 도구</dt><dd>${toolLabel(s.tools)}</dd><dt>선택한 시간</dt><dd>${s.minutes}분</dd><dt>실제 수행 시간</dt><dd>${fmtDur(s.actualSec)}</dd><dt>완료한 동작</dt><dd>${s.doneMoves}/${s.total}개</dd><dt>체감</dt><dd>${s.feel||'기록 없음'}</dd></dl></div>
+  <p class="b" style="margin:16px 0 6px">당시 루틴</p><div class="card" style="padding:4px 16px">${s.moves.map((id,i)=>{const m=MOVE[id];return m?`<div class="list-item"><span class="b small" style="width:22px">${i+1}</span><div style="flex:1"><div class="small b">${m.name}</div><div class="xs mut">${rn(m.regions[0])} · ${moveTimeLabel(m)}</div></div></div>`:'';}).join('')}</div>
+  <button class="btn sec" data-act="reuseSession" data-arg="${s.id}">이 조건으로 다시 만들기</button>`;
+}
+function modalHtml(){
+  const m=ui.modal;if(!m)return '';
+  const map={
+    reset:['데이터를 초기화할까요?','직접 입력한 평가, 진행 중인 평가, 운동 기록과 불러온 예시 데이터가 모두 삭제돼요. 되돌릴 수 없어요.','초기화','doReset'],
+    exitAssess:['평가를 잠시 멈출까요?','지금까지 고른 결과는 저장돼요. 홈에서 이어서 평가할 수 있어요.','나가기','doExitAssess'],
+    exitPlayer:['운동을 종료할까요?','지금까지 수행한 시간과 끝낸 동작만 ‘중도 종료’로 저장해요.','종료하기','doExitPlayer'],
+  }[m];
+  return `<div class="modal-bg" role="dialog" aria-modal="true" aria-labelledby="mdT"><div class="modal"><h3 id="mdT">${map[0]}</h3><p class="mut" style="margin:0 0 20px">${map[1]}</p><div class="row"><button class="btn sec" data-act="closeModal">취소</button><button class="btn pri" data-act="${map[3]}" ${m==='reset'?'style="background:var(--down)"':''}>${map[2]}</button></div></div></div>`;
+}
+
+/* ---------- 렌더 ---------- */
+const VIEWS={intro:vIntro,home:vHome,assess:vAssess,mobility:vMobility,sport:vSport,purpose:vPurpose,tools:vTools,time:vTime,routine:vRoutine,player:vPlayer,done:vDone,records:vRecords,sub:vSub};
+function render(){
+  if(ui.screen==='player'&&!S.player)ui.screen='home';
+  if(ui.screen==='assess'&&!S.draft)ui.screen='home';
+  ANIMS={};animId=0;
+  const app=$('#app');app.innerHTML=VIEWS[ui.screen]();
+  const first=app.firstElementChild;if(first&&lastScreen!==ui.screen)first.classList.add('enter');
+  lastScreen=ui.screen;renderLayer();
+}
+function renderLayer(){
+  let h='';
+  if(ui.sheet){const body=ui.sheet==='settings'?sheetSettings():ui.sheet.startsWith('a:')?sheetAssessment(ui.sheet.slice(2)):sheetSession(ui.sheet.slice(2));
+    h+=`<div class="sheet-bg" data-act="closeSheet"><div class="sheet" role="dialog" aria-modal="true" data-stop="1"><div class="grab"></div>${body}<button class="btn soft" data-act="closeSheet" style="margin-top:12px">닫기</button></div></div>`;}
+  h+=modalHtml();
+  if(ui.toast)h+=`<div class="toast" role="status">${ui.toast}</div>`;
+  $('#layer').innerHTML=h;
+}
+// 도식 애니메이션 (화면에 보이는 것만, 약 24fps)
+let lastAnim=0;
+function animLoop(ts){
+  if(ts-lastAnim>40){lastAnim=ts;const t=(Math.sin(ts/900)+1)/2,e=t*t*(3-2*t);
+    for(const id in ANIMS){const el=document.getElementById(id);if(!el)continue;const ps=ANIMS[id],p=lerp(ps[0],ps[1],e);el.innerHTML=p.k==='top'?svgTop(p):p.k==='back'?svgBack(p):svgBody(p);}}
+  requestAnimationFrame(animLoop);
+}
+
+/* ---------- 동작(이벤트) ---------- */
+function newDraft(opts={}){S.draft={answers:{},angles:{},step:0,isRe:!!opts.isRe,editId:null};save();}
+const A={
+  back,tab,
+  startAssess(){S.onboarded=true;if(!S.draft)newDraft();go('assess');},
+  resumeAssess(){go('assess');},
+  startReassess(){S.onboarded=true;newDraft({isRe:true});go('assess');toast('이전 기록은 그대로 두고 새 결과로 저장해요.');},
+  continueAssess(id){const a=S.assessments.find(x=>x.id===id);if(!a)return;S.draft={answers:Object.assign({},a.answers),angles:Object.assign({},a.angles||{}),step:Math.max(0,TESTS.findIndex(t=>typeof a.answers[t.id]!=='number')),isRe:false,editId:a.id};save();ui.sheet=null;go('assess');},
+  assessExit(){ui.modal='exitAssess';renderLayer();},
+  doExitAssess(){ui.modal=null;ui.stack=[];ui.screen=S.onboarded?'home':'intro';render();},
+  pickLevel(v){const d=S.draft,t=TESTS[d.step];d.answers[t.id]=+v;delete d.angles[t.id];save();render();},
+  skipTest(){const d=S.draft,t=TESTS[d.step];d.answers[t.id]='skip';delete d.angles[t.id];save();if(d.step<9){d.step++;save();ui.anglePanel=false;render();window.scrollTo(0,0);}else{render();}},
+  toggleAngle(){ui.anglePanel=!ui.anglePanel;const t=TESTS[S.draft.step];ui.angleVal=S.draft.angles[t.id]??Math.round((t.angle.min+t.angle.max)/2);render();},
+  applyAngle(){const d=S.draft,t=TESTS[d.step],a=ui.angleVal;d.answers[t.id]=angleToLevel(t,a);d.angles[t.id]=a;ui.anglePanel=false;save();render();},
+  assessPrev(){const d=S.draft;if(d.step>0){d.step--;save();ui.anglePanel=false;render();window.scrollTo(0,0);}},
+  assessNext(){const d=S.draft;if(d.answers[TESTS[d.step].id]==null)return;
+    if(d.step<9){d.step++;save();ui.anglePanel=false;render();window.scrollTo(0,0);return;}
+    const rec={id:d.editId||uid(),date:new Date().toISOString(),answers:d.answers,angles:d.angles,demo:false};
+    if(d.editId){const i=S.assessments.findIndex(a=>a.id===d.editId);const old=S.assessments[i];rec.demo=!!old.demo;rec.date=old.demo?new Date().toISOString():old.date;if(old.demo)rec.id=uid();if(old.demo)S.assessments.push(rec);else S.assessments[i]=rec;}
+    else S.assessments.push(rec);
+    S.draft=null;S.onboarded=true;save();ui.stack=[];ui.screen='mobility';render();window.scrollTo(0,0);
+    const sc=scoreAssessment(rec);toast(sc.overall!=null?`평가를 저장했어요. 종합 ${sc.overall}점`:'평가를 저장했어요. 건너뛴 항목은 미평가로 표시돼요.');},
+  loadDemo(){loadDemo();ui.sheet=null;ui.stack=[];ui.screen='home';render();toast('예시 사용자의 데모 기록을 불러왔어요.');},
+  openSettings(){ui.sheet='settings';renderLayer();},
+  closeSheet(arg,el,e){if(e&&e.target.closest('[data-stop]')&&!el.closest('.sheet'))return;ui.sheet=null;renderLayer();},
+  openSub(){ui.sheet=null;renderLayer();go('sub');},
+  openAssessment(id){ui.sheet='a:'+id;renderLayer();},
+  openSession(id){ui.sheet='s:'+id;renderLayer();},
+  reuseSession(id){const s=S.sessions.find(x=>x.id===id);if(!s)return;Object.assign(S.prefs,{sport:s.sport,purpose:s.purpose,tools:[...s.tools],minutes:s.minutes});save();ui.sheet=null;go('routine');},
+  askReset(){ui.modal='reset';renderLayer();},
+  doReset(){stopTick();const sound=S.prefs.sound;S=blank();S.prefs.sound=sound;save();ui={screen:'intro',stack:[],sheet:null,modal:null,anglePanel:false,angleVal:null,detail:null,doneId:null,toast:null};render();toast('모든 데이터를 초기화했어요.');},
+  closeModal(){ui.modal=null;renderLayer();},
+  startBuilder(){S.onboarded=true;go('sport');},
+  pickSport(k){S.prefs.sport=k;save();render();setTimeout(()=>{if(ui.screen==='sport')go('purpose');},220);},
+  pickPurpose(k){S.prefs.purpose=k;save();render();},
+  pickTool(k){let t=S.prefs.tools;if(k==='none')t=t.includes('none')?[]:['none'];else{t=t.filter(x=>x!=='none');t=t.includes(k)?t.filter(x=>x!==k):[...t,k];}S.prefs.tools=t;save();render();},
+  pickTime(m){S.prefs.minutes=+m;save();render();},
+  stepNext(n){go(n);},
+  makeRoutine(){ui.stack=ui.stack.filter(s=>!['sport','purpose','tools','time'].includes(s));go('routine');},
+  editConditions(){go('sport');},
+  toggleQuick(){S.prefs.quick=!S.prefs.quick;save();render();},
+  startPlayer,
+  plToggle(){ensureAudio();S.player.running?plPause():plStart();},
+  plPrev(){const p=S.player;plJump(p.segs[p.i].m-1);},
+  plNext(){const p=S.player,mi=p.segs[p.i].m;if(mi>=p.ids.length-1){ui.modal='exitPlayer';renderLayer();return;}plJump(mi+1);},
+  plExit(){ui.modal='exitPlayer';renderLayer();},
+  doExitPlayer(){ui.modal=null;finishPlayer('partial');},
+  toggleSound(){S.prefs.sound=!S.prefs.sound;save();if(ui.screen==='player')render();else renderLayer();},
+  pickFeel(f){const s=S.sessions.find(x=>x.id===ui.doneId);if(!s)return;s.feel=s.feel===f?null:f;save();render();},
+};
+document.addEventListener('click',e=>{
+  const el=e.target.closest('[data-act]');if(!el||el.disabled)return;
+  if(el.classList.contains('sheet-bg')&&e.target!==el)return; // 시트 내부 클릭은 닫지 않음
+  const fn=A[el.dataset.act];if(fn)fn(el.dataset.arg,el,e);
+});
+document.addEventListener('input',e=>{
+  if(e.target.dataset.input!=='angle')return;const t=TESTS[S.draft.step],a=+e.target.value;ui.angleVal=a;
+  $('#angNum').textContent=a;$('#angLvl').textContent='범위 '+angleToLevel(t,a);
+  $('#angGauge').innerHTML=gauge(a,t.angle);$('#angFig').innerHTML=svgPose(t.pose(a),'입력한 각도의 자세').replace('<svg','<svg class="fig"');
+});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&(ui.sheet||ui.modal)){ui.sheet=null;ui.modal=null;renderLayer();}});
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&S.player&&S.player.running){const c=sync(Date.now());if(S.player){save();ui.screen==='player'&&(c?render():updateTimerDom());}}else if(document.hidden&&S.player)save();});
+window.addEventListener('pagehide',save);
+
+/* ---------- 시작 ---------- */
+// 새로고침 시 진행 중이던 루틴은 그 자리에서 일시정지 상태로 복원
+if(S.player&&S.player.running){const p=S.player;p.remain=Math.max(0,Math.min(p.segs[p.i].d*1000,(p.endAt||Date.now())-Date.now()))||p.segs[p.i].d*1000;p.running=false;p.endAt=null;save();}
+render();requestAnimationFrame(animLoop);
+window.WOD={S:()=>S,recommend,scoreAssessment,TESTS,MOVES,demoData,moveSec,REGION_KEYS};
+</script>
+</body>
+</html>
